@@ -104,10 +104,12 @@ void ADemoCharacter::CharacterLook(const FInputActionValue& value)
 	float LookUpScaleFactor{1.f};
 	//if (bAiming)
 	//{
+	//	LookUpScaleFactor = MouseAimingLookUpRate;
 	//	TurnScaleFactor = MouseAimingTurnRate;
 	//}
 	//else
 	//{
+	//	LookUpScaleFactor = MouseHipLookUpRate;
 	//	TurnScaleFactor = MouseHipTurnRate;
 	//}
 	AddControllerYawInput(LookAxis.X * TurnScaleFactor); // turn
