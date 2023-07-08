@@ -44,5 +44,25 @@ void ADemoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+#pragma region initEnhancedInputSystem
+	// Get the player controller
+	APlayerController* PC = Cast<APlayerController>(GetController());
+
+	// Get the local player subsystem
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
+	// Clear out existing mapping, and add our mapping
+	Subsystem->ClearAllMappings();
+	Subsystem->AddMappingContext(DefaultMappingContext, 0);
+
+	UEnhancedInputComponent* PEI = Cast<UEnhancedInputComponent>(PlayerInputComponent);
+#pragma endregion
+
+	// Bind the actions
+	PEI->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ADemoCharacter::Move);
+}
+
+void ADemoCharacter::Move()
+{
+	UE_LOG(LogTemp, Warning, TEXT("SAFAS"));
 }
 
