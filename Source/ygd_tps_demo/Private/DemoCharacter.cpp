@@ -58,11 +58,62 @@ void ADemoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 #pragma endregion
 
 	// Bind the actions
-	PEI->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ADemoCharacter::Move);
+	PEI->BindAction(IA_Debug, ETriggerEvent::Triggered, this, &ADemoCharacter::PEIDebug);
+	PEI->BindAction(IA_Move, ETriggerEvent::Triggered, this, &ADemoCharacter::CharacterMove);
+	PEI->BindAction(IA_Look, ETriggerEvent::Triggered, this, &ADemoCharacter::CharacterLook);
 }
 
-void ADemoCharacter::Move()
+void ADemoCharacter::PEIDebug(const FInputActionValue& value)
 {
-	UE_LOG(LogTemp, Warning, TEXT("SAFAS"));
+	UE_LOG(LogTemp, Warning, TEXT("PEIDebug"));
+}
+
+void ADemoCharacter::CharacterMove(const FInputActionValue& value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("SAFGFWAF"));
+	FVector2D MoveValue = value.Get<FVector2D>();
+	if (Controller != nullptr)
+	{
+		const FRotator MovementRotation(0, Controller->GetControlRotation().Yaw, 0);
+
+		// Forward/Backward direction
+		if (MoveValue.Y != 0.f)
+		{
+			// Get forward vector
+			const FVector Direction = MovementRotation.RotateVector(FVector::ForwardVector);
+
+			AddMovementInput(Direction, MoveValue.Y);
+		}
+
+		// Right/Left direction
+		if (MoveValue.X != 0.f)
+		{
+			// Get right vector
+			const FVector Direction = MovementRotation.RotateVector(FVector::RightVector);
+
+			AddMovementInput(Direction, MoveValue.X);
+		}
+	}
+}
+
+void ADemoCharacter::CharacterLook(const FInputActionValue& value)
+{
+	FVector2D LookAxis = value.Get<FVector2D>();
+
+	float TurnScaleFactor{1.f};
+	float LookUpScaleFactor{1.f};
+	//if (bAiming)
+	//{
+	//	TurnScaleFactor = MouseAimingTurnRate;
+	//}
+	//else
+	//{
+	//	TurnScaleFactor = MouseHipTurnRate;
+	//}
+	AddControllerYawInput(LookAxis.X * TurnScaleFactor); // turn
+
+	AddControllerPitchInput(LookAxis.Y * LookUpScaleFactor); // look up
+
+
 }
 
