@@ -6,10 +6,13 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
+#include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
+
+#include "Kismet/GameplayStatics.h"
 
 #include "DemoCharacter.generated.h"
 
@@ -56,10 +59,31 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		class UInputAction* IA_Look;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+		class UInputAction* IA_SemiAutoWeaponFire;
+
 	void PEIDebug(const FInputActionValue& value);
 	void CharacterMove(const FInputActionValue& value);
 	void CharacterLook(const FInputActionValue& value);
 #pragma endregion
 
+#pragma region Combat
+
+	const USkeletalMeshSocket* BarrelSocket;
+	const UParticleSystem* WeaponShootParticle;
+
+	void WeaponFire();
+
+	bool GetBeamEndLocation(
+		const FVector& MuzzleSocketLocation,
+		FHitResult& OutHitResult);
+
+	bool TraceUnderCrosshairs(
+		FHitResult& OutHitResult,
+		FVector& OutHitLocation);
+
+	
+
+#pragma endregion
 
 };

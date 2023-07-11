@@ -9,6 +9,7 @@ ADemoCharacter::ADemoCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+#pragma region init Camera
 	CameraSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraSpringArm"));
 	CameraSpringArm->SetupAttachment(RootComponent);
 	CameraSpringArm->TargetArmLength = 300.f;
@@ -22,7 +23,9 @@ ADemoCharacter::ADemoCharacter()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
+#pragma endregion
 
+	
 }
 
 // Called when the game starts or when spawned
@@ -30,6 +33,10 @@ void ADemoCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	BarrelSocket = GetMesh()->GetSocketByName("BarrelSocket");
+	FName BoneName = BarrelSocket->BoneName;
+	FName SocketName = BarrelSocket->SocketName;
+	UE_LOG(LogTemp, Warning, TEXT("Parent Bone: %s, Self Socket: %s"), *BoneName.ToString(), *SocketName.ToString());
 }
 
 // Called every frame
@@ -37,6 +44,7 @@ void ADemoCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// WeaponFire();
 }
 
 // Called to bind functionality to input
@@ -61,6 +69,7 @@ void ADemoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PEI->BindAction(IA_Debug, ETriggerEvent::Triggered, this, &ADemoCharacter::PEIDebug);
 	PEI->BindAction(IA_Move, ETriggerEvent::Triggered, this, &ADemoCharacter::CharacterMove);
 	PEI->BindAction(IA_Look, ETriggerEvent::Triggered, this, &ADemoCharacter::CharacterLook);
+	PEI->BindAction(IA_SemiAutoWeaponFire, ETriggerEvent::Triggered, this, &ADemoCharacter::WeaponFire);
 }
 
 void ADemoCharacter::PEIDebug(const FInputActionValue& value)
@@ -70,7 +79,6 @@ void ADemoCharacter::PEIDebug(const FInputActionValue& value)
 
 void ADemoCharacter::CharacterMove(const FInputActionValue& value)
 {
-	UE_LOG(LogTemp, Warning, TEXT("SAFGFWAF"));
 	FVector2D MoveValue = value.Get<FVector2D>();
 	if (Controller != nullptr)
 	{
@@ -117,5 +125,97 @@ void ADemoCharacter::CharacterLook(const FInputActionValue& value)
 	AddControllerPitchInput(LookAxis.Y * LookUpScaleFactor); // look up
 
 
+}
+
+void ADemoCharacter::WeaponFire()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Fire"));
+
+	//if (BarrelSocket)
+	//{
+	//	const FTransform BarrelSocketTransform = BarrelSocket->GetSocketLocalTransform();
+
+	//	FHitResult BeamHitResult;
+	//	bool bBeamEnd = GetBeamEndLocation(BarrelSocketTransform.GetLocation(), BeamHitResult);
+
+	//	if (bBeamEnd)
+	//	{
+	//		// UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), )
+	//		UE_LOG(LogTemp, Warning, TEXT("Weapon Fire Hit: %s"), *BeamHitResult.GetActor()->GetFName().ToString());
+	//		
+	//	}
+	//}
+	//else
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("NOT BarrelSocket!"));
+	//}
+}
+
+bool ADemoCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FHitResult& OutHitResult)
+{
+	FVector OutBeamEndLocation;
+	FHitResult CrosshairHitResult;
+	bool bCrosshairHit = TraceUnderCrosshairs(CrosshairHitResult, OutBeamEndLocation);
+
+	if (bCrosshairHit)
+	{
+		OutBeamEndLocation = CrosshairHitResult.Location;
+	}
+	// if !bCrosshairHit, OutBeamLocation is the End location for the line trace
+
+	const FVector WeaponTraceStart{ MuzzleSocketLocation };
+	const FVector WeaponTraceEnd{ OutBeamEndLocation };
+	GetWorld()->LineTraceSingleByChannel(
+		OutHitResult,
+		WeaponTraceStart,
+		WeaponTraceEnd,
+		ECollisionChannel::ECC_Visibility);
+
+	if (!OutHitResult.bBlockingHit) // object between barrel and BeamEndPoint?
+	{
+		OutHitResult.Location = OutBeamEndLocation;
+		return false;
+	}
+
+	return true;
+}
+
+bool ADemoCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& OutHitLocation)
+{
+	FVector2D ViewportSize;
+	if (GEngine && GEngine->GameViewport)
+	{
+		GEngine->GameViewport->GetViewportSize(ViewportSize);
+	}
+
+	FVector2D CrosshairScreenLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f);
+	FVector CrosshairWorldPosition;
+	FVector CrosshairWorldDirection;
+
+	bool bWorldScreen = UGameplayStatics::DeprojectScreenToWorld(
+		UGameplayStatics::GetPlayerController(this, 0),
+		CrosshairScreenLocation,
+		CrosshairWorldPosition,
+		CrosshairWorldDirection);
+
+	if (bWorldScreen)
+	{
+		const FVector Start{ CrosshairWorldPosition };
+		const FVector End{ Start + CrosshairWorldDirection };
+		OutHitLocation = End;
+		GetWorld()->LineTraceSingleByChannel(
+			OutHitResult,
+			Start,
+			End,
+			ECollisionChannel::ECC_Visibility);
+
+		if (OutHitResult.bBlockingHit)
+		{
+			OutHitLocation = OutHitResult.Location;
+			return true;
+		}
+	}
+
+	return false;
 }
 
