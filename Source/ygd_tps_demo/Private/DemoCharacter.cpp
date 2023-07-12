@@ -34,9 +34,11 @@ void ADemoCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	BarrelSocket = GetMesh()->GetSocketByName("BarrelSocket");
-	FName BoneName = BarrelSocket->BoneName;
-	FName SocketName = BarrelSocket->SocketName;
-	UE_LOG(LogTemp, Warning, TEXT("Parent Bone: %s, Self Socket: %s"), *BoneName.ToString(), *SocketName.ToString());
+	//FName BoneName = BarrelSocket->BoneName;
+	//FName SocketName = BarrelSocket->SocketName;
+	//UE_LOG(LogTemp, Warning, TEXT("Parent Bone: %s, Self Socket: %s"), *BoneName.ToString(), *SocketName.ToString());
+
+	AnimInstance = GetMesh()->GetAnimInstance();
 }
 
 // Called every frame
@@ -131,36 +133,51 @@ void ADemoCharacter::WeaponFire()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Fire"));
 
-	//if (BarrelSocket)
-	//{
-	//	const FTransform BarrelSocketTransform = BarrelSocket->GetSocketLocalTransform();
+	if (BarrelSocket)
+	{
+		const FTransform BarrelSocketTransform = BarrelSocket->GetSocketLocalTransform();
 
-	//	FHitResult BeamHitResult;
-	//	bool bBeamEnd = GetBeamEndLocation(BarrelSocketTransform.GetLocation(), BeamHitResult);
+		FHitResult BeamHitResult;
+		bool bBeamEnd = GetBeamEndLocation(BarrelSocketTransform.GetLocation(), BeamHitResult);
 
-	//	if (bBeamEnd)
-	//	{
-	//		// UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), )
-	//		UE_LOG(LogTemp, Warning, TEXT("Weapon Fire Hit: %s"), *BeamHitResult.GetActor()->GetFName().ToString());
-	//		
-	//	}
-	//}
-	//else
-	//{
-	//	UE_LOG(LogTemp, Warning, TEXT("NOT BarrelSocket!"));
-	//}
+		if (bBeamEnd)
+		{
+			// UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), )
+			UGameplayStatics::SpawnEmitterAtLocation(
+				GetWorld(),
+				ImpactParticles,
+				BeamHitResult.Location);
+
+			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
+				GetWorld(),
+				BeamParticles,
+				BarrelSocketTransform);
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NOT BarrelSocket!"));
+	}
+
+	if (AnimInstance && HipFireMontage)
+	{
+		AnimInstance = GetMesh()->GetAnimInstance();
+		AnimInstance->Montage_Play(HipFireMontage);
+		AnimInstance->Montage_JumpToSection(FName("StartFire"));
+	}
 }
 
 bool ADemoCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FHitResult& OutHitResult)
 {
 	FVector OutBeamEndLocation;
 	FHitResult CrosshairHitResult;
-	bool bCrosshairHit = TraceUnderCrosshairs(CrosshairHitResult, OutBeamEndLocation);
 
-	if (bCrosshairHit)
-	{
-		OutBeamEndLocation = CrosshairHitResult.Location;
-	}
+	//bool bCrosshairHit = TraceUnderCrosshairs(CrosshairHitResult, OutBeamEndLocation);
+
+	//if (bCrosshairHit)
+	//{
+	//	OutBeamEndLocation = CrosshairHitResult.Location;
+	//}
 	// if !bCrosshairHit, OutBeamLocation is the End location for the line trace
 
 	const FVector WeaponTraceStart{ MuzzleSocketLocation };

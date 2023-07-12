@@ -37,6 +37,10 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
+
+
+	
+
 #pragma region CameraControll
 	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class USpringArmComponent* CameraSpringArm;
@@ -52,7 +56,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		class UInputAction* IA_Debug;
 
-	/** Move Input Action */
+	/* Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		class UInputAction* IA_Move;
 
@@ -67,22 +71,40 @@ private:
 	void CharacterLook(const FInputActionValue& value);
 #pragma endregion
 
+#pragma region Anim
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UAnimMontage* HipFireMontage;
+
+	class UAnimInstance* AnimInstance;
+#pragma endregion
+
+#pragma region Asset
+	/* Particles spawned upon bullet impact */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+		UParticleSystem* ImpactParticles;
+
+	/* Smoke trail for bullets */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+		UParticleSystem* BeamParticles;
+#pragma endregion
+
 #pragma region Combat
 
 	const USkeletalMeshSocket* BarrelSocket;
 	const UParticleSystem* WeaponShootParticle;
 
+	/* Called when the Fire Button is pressed. */
 	void WeaponFire();
 
+	/* Return HitResult from crosshair. */
 	bool GetBeamEndLocation(
 		const FVector& MuzzleSocketLocation,
 		FHitResult& OutHitResult);
 
+	/* Line trace for items under the crosshair. */
 	bool TraceUnderCrosshairs(
 		FHitResult& OutHitResult,
 		FVector& OutHitLocation);
-
-	
 
 #pragma endregion
 
