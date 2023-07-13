@@ -104,11 +104,6 @@ private:
 		const FVector& MuzzleSocketLocation,
 		FHitResult& OutHitResult);
 
-	/* Line trace for items under the crosshair. */
-	bool TraceUnderCrosshairs(
-		FHitResult& OutHitResult,
-		FVector& OutHitLocation);
-
 #pragma endregion
 
 };

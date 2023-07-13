@@ -126,7 +126,6 @@ void ADemoCharacter::CharacterLook(const FInputActionValue& value)
 
 	AddControllerPitchInput(LookAxis.Y * LookUpScaleFactor); // look up
 
-
 }
 
 void ADemoCharacter::WeaponFire()
@@ -224,8 +223,4 @@ bool ADemoCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FHi
 	}
 }
 
-bool ADemoCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& OutHitLocation)
-{
-	return false;
-}
 
