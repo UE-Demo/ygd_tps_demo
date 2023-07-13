@@ -14,7 +14,7 @@ ADemoCharacter::ADemoCharacter()
 	CameraSpringArm->SetupAttachment(RootComponent);
 	CameraSpringArm->TargetArmLength = 300.f;
 	CameraSpringArm->bUsePawnControlRotation = true;
-	CameraSpringArm->SocketOffset = FVector(0.f, -50.f, 70.f);
+	CameraSpringArm->SocketOffset = FVector(0.f, -50.f, 50.f);
 
 	CharacterCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("CharacterCamera"));
 	CharacterCamera->SetupAttachment(CameraSpringArm, USpringArmComponent::SocketName);
@@ -33,12 +33,6 @@ void ADemoCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	BarrelSocket = GetMesh()->GetSocketByName("BarrelSocket");
-	//FName BoneName = BarrelSocket->BoneName;
-	//FName SocketName = BarrelSocket->SocketName;
-	//UE_LOG(LogTemp, Warning, TEXT("Parent Bone: %s, Self Socket: %s"), *BoneName.ToString(), *SocketName.ToString());
-
-	AnimInstance = GetMesh()->GetAnimInstance();
 }
 
 // Called every frame
@@ -133,25 +127,54 @@ void ADemoCharacter::WeaponFire()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Fire"));
 
+	const USkeletalMeshSocket* BarrelSocket = GetMesh()->GetSocketByName("BarrelSocket");
+
 	if (BarrelSocket)
 	{
-		const FTransform BarrelSocketTransform = BarrelSocket->GetSocketLocalTransform();
+		const FTransform BarrelSocketTransform = BarrelSocket->GetSocketTransform(GetMesh());
 
-		FHitResult BeamHitResult;
-		bool bBeamEnd = GetBeamEndLocation(BarrelSocketTransform.GetLocation(), BeamHitResult);
+		FVector BeamHitLocation;
+		bool bBeamEnd = GetBeamEndLocation(
+			BarrelSocketTransform.GetLocation(), BeamHitLocation);
 
 		if (bBeamEnd)
 		{
 			// UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), )
-			UGameplayStatics::SpawnEmitterAtLocation(
-				GetWorld(),
-				ImpactParticles,
-				BeamHitResult.Location);
+			if (ImpactParticles)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(
+					GetWorld(),
+					ImpactParticles,
+					BeamHitLocation);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Not ImpactParticles"));
+			}
 
-			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
-				GetWorld(),
-				BeamParticles,
-				BarrelSocketTransform);
+			if (BeamParticles)
+			{
+				UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
+					GetWorld(),
+					BeamParticles,
+					BarrelSocketTransform);
+				if (Beam)
+				{
+					Beam->SetVectorParameter(FName("Target"), BeamHitLocation);
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Not Beam"));
+				}
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Not BeamParticles"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("NOT bBeamEnd!"));
 		}
 	}
 	else
@@ -159,6 +182,7 @@ void ADemoCharacter::WeaponFire()
 		UE_LOG(LogTemp, Warning, TEXT("NOT BarrelSocket!"));
 	}
 
+	AnimInstance = GetMesh()->GetAnimInstance();
 	if (AnimInstance && HipFireMontage)
 	{
 		AnimInstance = GetMesh()->GetAnimInstance();
@@ -167,72 +191,79 @@ void ADemoCharacter::WeaponFire()
 	}
 }
 
-bool ADemoCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FHitResult& OutHitResult)
+bool ADemoCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& BeamEndLocation)
 {
-	FVector OutBeamEndLocation;
+	// Check for crosshair trace hit
 	FHitResult CrosshairHitResult;
+	bool bCrosshairHit = TraceUnderCrosshairs(CrosshairHitResult, BeamEndLocation);
 
-	//bool bCrosshairHit = TraceUnderCrosshairs(CrosshairHitResult, OutBeamEndLocation);
+	if (bCrosshairHit)
+	{
+		// Tentative beam location - still need to trace from gun
+		BeamEndLocation = CrosshairHitResult.Location;
+	}
+	else // no crosshair trace hit
+	{
+		// OutBeamLocation is the End location for the line trace
+	}
 
-	//if (bCrosshairHit)
-	//{
-	//	OutBeamEndLocation = CrosshairHitResult.Location;
-	//}
-	// if !bCrosshairHit, OutBeamLocation is the End location for the line trace
-
+	// Perform a second trace, this time from the gun barrel
+	FHitResult WeaponTraceHit;
 	const FVector WeaponTraceStart{ MuzzleSocketLocation };
-	const FVector WeaponTraceEnd{ OutBeamEndLocation };
+	const FVector StartToEnd{ BeamEndLocation - WeaponTraceStart };
+	const FVector WeaponTraceEnd{ MuzzleSocketLocation + StartToEnd * 1.25f };
 	GetWorld()->LineTraceSingleByChannel(
-		OutHitResult,
+		WeaponTraceHit,
 		WeaponTraceStart,
 		WeaponTraceEnd,
 		ECollisionChannel::ECC_Visibility);
-
-	if (!OutHitResult.bBlockingHit) // object between barrel and BeamEndPoint?
+	if (WeaponTraceHit.bBlockingHit) // object between barrel and BeamEndPoint?
 	{
-		OutHitResult.Location = OutBeamEndLocation;
-		return false;
+		BeamEndLocation = WeaponTraceHit.Location;
+		return true;
 	}
 
-	return true;
+	return false;
 }
 
 bool ADemoCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& OutHitLocation)
 {
+	// Get Viewport Size
 	FVector2D ViewportSize;
 	if (GEngine && GEngine->GameViewport)
 	{
 		GEngine->GameViewport->GetViewportSize(ViewportSize);
 	}
 
-	FVector2D CrosshairScreenLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f);
+	// Get screen space location of crosshairs
+	FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f);
 	FVector CrosshairWorldPosition;
 	FVector CrosshairWorldDirection;
 
-	bool bWorldScreen = UGameplayStatics::DeprojectScreenToWorld(
+	// Get world position and direction of crosshairs
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
 		UGameplayStatics::GetPlayerController(this, 0),
-		CrosshairScreenLocation,
+		CrosshairLocation,
 		CrosshairWorldPosition,
 		CrosshairWorldDirection);
 
-	if (bWorldScreen)
+	if (bScreenToWorld)
 	{
+		// Trace from Crosshair world location outward
 		const FVector Start{ CrosshairWorldPosition };
-		const FVector End{ Start + CrosshairWorldDirection };
+		const FVector End{ Start + CrosshairWorldDirection * 50'000.f };
 		OutHitLocation = End;
 		GetWorld()->LineTraceSingleByChannel(
 			OutHitResult,
 			Start,
 			End,
 			ECollisionChannel::ECC_Visibility);
-
 		if (OutHitResult.bBlockingHit)
 		{
 			OutHitLocation = OutHitResult.Location;
 			return true;
 		}
 	}
-
 	return false;
 }
 

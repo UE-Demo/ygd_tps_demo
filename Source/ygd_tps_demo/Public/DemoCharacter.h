@@ -6,6 +6,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
+#include "Particles/ParticleSystemComponent.h"
+
 #include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -90,7 +92,6 @@ private:
 
 #pragma region Combat
 
-	const USkeletalMeshSocket* BarrelSocket;
 	const UParticleSystem* WeaponShootParticle;
 
 	/* Called when the Fire Button is pressed. */
@@ -98,8 +99,7 @@ private:
 
 	/* Return HitResult from crosshair. */
 	bool GetBeamEndLocation(
-		const FVector& MuzzleSocketLocation,
-		FHitResult& OutHitResult);
+		const FVector& MuzzleSocketLocation, FVector& BeamEndLocation);
 
 	/* Line trace for items under the crosshair. */
 	bool TraceUnderCrosshairs(
