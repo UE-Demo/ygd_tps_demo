@@ -6,6 +6,7 @@
 
 #include "DemoCharacter.h"
 #include "Animation/AnimInstance.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "DemoAnimInstance.generated.h"
 
 /**
@@ -29,6 +30,8 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	bool bIsAccelerating;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	float MovementOffset;
 
 public:
 	UFUNCTION(BlueprintCallable)

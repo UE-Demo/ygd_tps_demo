@@ -19,6 +19,10 @@ void UDemoAnimInstance::UpdateAnimationProperties(float DeltaTime)
 
 		bIsAccelerating = DemoCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size2D() > 0.0f;
 	}
+
+	FRotator AimRotation = DemoCharacter->GetBaseAimRotation();
+	FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(DemoCharacter->GetVelocity());
+	MovementOffset = UKismetMathLibrary::NormalizedDeltaRotator(MovementRotation, AimRotation).Yaw;
 }
 
 void UDemoAnimInstance::NativeInitializeAnimation()
