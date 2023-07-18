@@ -123,64 +123,48 @@ void ADemoCharacter::CharacterLook(const FInputActionValue& value)
 
 }
 
+#pragma region Aim&Shoot
+
 void ADemoCharacter::WeaponFire()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Fire"));
 
 	const USkeletalMeshSocket* BarrelSocket = GetMesh()->GetSocketByName("BarrelSocket");
 
-	if (BarrelSocket)
+	const FTransform BarrelSocketTransform = BarrelSocket->GetSocketTransform(GetMesh());
+
+	FVector BeamEndLocation;
+
+	// 在命中点生成命中特效
+	if (GetBeamEndLocation(
+		BarrelSocketTransform.GetLocation(), BeamEndLocation)) // 判定命中同时获取命中信息
 	{
-		const FTransform BarrelSocketTransform = BarrelSocket->GetSocketTransform(GetMesh());
-
-		FVector BeamHitLocation;
-		bool bBeamEnd = GetBeamEndLocation(
-			BarrelSocketTransform.GetLocation(), BeamHitLocation);
-
-		if (bBeamEnd)
+		if (ImpactParticles)
 		{
-			// UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), )
-			if (ImpactParticles)
-			{
-				UGameplayStatics::SpawnEmitterAtLocation(
-					GetWorld(),
-					ImpactParticles,
-					BeamHitLocation);
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Not ImpactParticles"));
-			}
-
-			if (BeamParticles)
-			{
-				UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
-					GetWorld(),
-					BeamParticles,
-					BarrelSocketTransform);
-				if (Beam)
-				{
-					Beam->SetVectorParameter(FName("Target"), BeamHitLocation);
-				}
-				else
-				{
-					UE_LOG(LogTemp, Warning, TEXT("Not Beam"));
-				}
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Not BeamParticles"));
-			}
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("NOT bBeamEnd!"));
+			UGameplayStatics::SpawnEmitterAtLocation(
+				GetWorld(),
+				ImpactParticles,
+				BeamEndLocation);
 		}
 	}
-	else
+	else // not hit 
 	{
-		UE_LOG(LogTemp, Warning, TEXT("NOT BarrelSocket!"));
+		UE_LOG(LogTemp, Log, TEXT("Not Hit BeanEndLocation: %s"), *BeamEndLocation.ToString());
 	}
+
+	if (BeamParticles)
+	{
+		UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			BeamParticles,
+			BarrelSocketTransform);
+		if (Beam)
+		{
+			Beam->SetVectorParameter(FName("Target"), BeamEndLocation);
+			UE_LOG(LogTemp, Log, TEXT("Hit Location: %s"), *BeamEndLocation.ToString());
+		}
+	}
+
 
 	AnimInstance = GetMesh()->GetAnimInstance();
 	if (AnimInstance && HipFireMontage)
@@ -222,8 +206,11 @@ bool ADemoCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVe
 		BeamEndLocation = WeaponTraceHit.Location;
 		return true;
 	}
+	else
+	{
+		return false;
+	}
 
-	return false;
 }
 
 bool ADemoCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& OutHitLocation)
@@ -252,18 +239,28 @@ bool ADemoCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& Out
 		// Trace from Crosshair world location outward
 		const FVector Start{ CrosshairWorldPosition };
 		const FVector End{ Start + CrosshairWorldDirection * 50'000.f };
-		OutHitLocation = End;
+		const FVector EndIfNotHit{ Start + CrosshairWorldDirection * 300.f };
+		// OutHitLocation = End;
 		GetWorld()->LineTraceSingleByChannel(
 			OutHitResult,
 			Start,
 			End,
 			ECollisionChannel::ECC_Visibility);
+
 		if (OutHitResult.bBlockingHit)
 		{
 			OutHitLocation = OutHitResult.Location;
 			return true;
 		}
+		else
+		{
+			// 射程，暂时在这里定义
+			float WeaponRange = 20.f;
+			OutHitLocation = EndIfNotHit;
+			return false;
+		}
 	}
 	return false;
 }
 
+#pragma endregion
