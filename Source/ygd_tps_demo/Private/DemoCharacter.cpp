@@ -4,7 +4,10 @@
 #include "DemoCharacter.h"
 
 // Sets default values
-ADemoCharacter::ADemoCharacter()
+ADemoCharacter::ADemoCharacter() :
+	bAiming(false),
+	CameraAimingZoomFOV(60.f),
+	FOVAimingZoomInterpSpeed(20.f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -33,6 +36,8 @@ void ADemoCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	CameraDefaultFOV = GetCharacterCamera()->FieldOfView;
+	CameraTempFOV = CameraDefaultFOV;
 }
 
 // Called every frame
@@ -40,7 +45,7 @@ void ADemoCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// WeaponFire();
+	AimingZoomInterp(DeltaTime);
 }
 
 // Called to bind functionality to input
@@ -66,6 +71,10 @@ void ADemoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PEI->BindAction(IA_Move, ETriggerEvent::Triggered, this, &ADemoCharacter::CharacterMove);
 	PEI->BindAction(IA_Look, ETriggerEvent::Triggered, this, &ADemoCharacter::CharacterLook);
 	PEI->BindAction(IA_SemiAutoWeaponFire, ETriggerEvent::Triggered, this, &ADemoCharacter::WeaponFire);
+
+	PEI->BindAction(IA_Aiming, ETriggerEvent::Triggered, this, &ADemoCharacter::AimTrigger);
+	//PEI->BindAction(IA_Aiming, ETriggerEvent::Started, this, &ADemoCharacter::StartAiming);
+	//PEI->BindAction(IA_Aiming, ETriggerEvent::Canceled, this, &ADemoCharacter::StopAiming);
 }
 
 void ADemoCharacter::PEIDebug(const FInputActionValue& value)
@@ -239,7 +248,7 @@ bool ADemoCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& Out
 		// Trace from Crosshair world location outward
 		const FVector Start{ CrosshairWorldPosition };
 		const FVector End{ Start + CrosshairWorldDirection * 50'000.f };
-		const FVector EndIfNotHit{ Start + CrosshairWorldDirection * 300.f };
+		const FVector EndIfNotHit{ CrosshairWorldPosition + CrosshairWorldDirection * 3000.f };
 		// OutHitLocation = End;
 		GetWorld()->LineTraceSingleByChannel(
 			OutHitResult,
@@ -262,5 +271,51 @@ bool ADemoCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& Out
 	}
 	return false;
 }
+
+//void ADemoCharacter::StartAiming()
+//{
+//	UE_LOG(LogTemp, Log, TEXT("Aiming"));
+//	bAiming = true;
+//	GetCharacterCamera()->SetFieldOfView(CameraAimingZoomFOV);
+//}
+//
+//void ADemoCharacter::StopAiming()
+//{
+//	UE_LOG(LogTemp, Log, TEXT("Stop Aiming"));
+//	bAiming = false;
+//	GetCharacterCamera()->SetFieldOfView(CameraDefaultFOV);
+//}
+
+void ADemoCharacter::AimTrigger()
+{
+	if (bAiming)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Stop Aiming"));
+		bAiming = false;
+		GetCharacterCamera()->SetFieldOfView(CameraDefaultFOV);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Aiming"));
+		bAiming = true;
+		GetCharacterCamera()->SetFieldOfView(CameraAimingZoomFOV);
+	}
+}
+
+void ADemoCharacter::AimingZoomInterp(float DeltaTime)
+{
+	if (bAiming)
+	{
+		CameraTempFOV = FMath::FInterpTo(CameraTempFOV, CameraAimingZoomFOV, DeltaTime,FOVAimingZoomInterpSpeed);
+		GetCharacterCamera()->SetFieldOfView(CameraTempFOV);
+	}
+	else
+	{
+		CameraTempFOV = FMath::FInterpTo(CameraTempFOV, CameraDefaultFOV, DeltaTime, FOVAimingZoomInterpSpeed);
+		GetCharacterCamera()->SetFieldOfView(CameraTempFOV);
+	}
+}
+
+
 
 #pragma endregion

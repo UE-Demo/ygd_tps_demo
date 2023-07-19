@@ -49,6 +49,8 @@ private:
 
 	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class UCameraComponent* CharacterCamera;
+
+	FORCEINLINE UCameraComponent* GetCharacterCamera(){return CharacterCamera;}
 #pragma endregion
 
 #pragma region EnhancedInput
@@ -67,6 +69,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		class UInputAction* IA_SemiAutoWeaponFire;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+		class UInputAction* IA_Aiming;
 
 	void PEIDebug(const FInputActionValue& value);
 	void CharacterMove(const FInputActionValue& value);
@@ -105,6 +110,23 @@ private:
 	bool TraceUnderCrosshairs(
 		FHitResult& OutHitResult,
 		FVector& OutHitLocation);
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	bool bAiming;
+
+	float CameraDefaultFOV;
+	float CameraAimingZoomFOV;
+	/* Use for Aiming Interpolation FOV. */
+	float CameraTempFOV;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float FOVAimingZoomInterpSpeed;
+
+	//void StartAiming();
+	//void StopAiming();
+	void AimTrigger();
+	/* Called in Tick. */
+	void AimingZoomInterp(float DeltaTime);
 
 #pragma endregion
 
