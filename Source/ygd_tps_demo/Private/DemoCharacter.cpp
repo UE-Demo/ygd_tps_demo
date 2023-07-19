@@ -46,6 +46,34 @@ void ADemoCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	AimingZoomInterp(DeltaTime);
+
+	FHitResult ItemTraceResult;
+	FVector OnlyForTempNotUsed;
+	TraceUnderCrosshairs(ItemTraceResult, OnlyForTempNotUsed);
+	if (ItemTraceResult.bBlockingHit)
+	{
+		ADemoItem* HitItem = Cast<ADemoItem>(ItemTraceResult.GetActor());
+		if (HitItem && HitItem->GetDropInfoWidget())
+		{
+			HitItem->GetDropInfoWidget()->SetVisibility(true);
+			UE_LOG(LogTemp, Warning, TEXT("Trace Item"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Not Trace Item"));
+		}
+
+		if (HitItem && HitItem->GetDropInfoWidget()->IsVisible())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Widget Visible"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Widget Not Visible"));
+		}
+	}
+
+
 }
 
 // Called to bind functionality to input
@@ -73,8 +101,6 @@ void ADemoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PEI->BindAction(IA_SemiAutoWeaponFire, ETriggerEvent::Triggered, this, &ADemoCharacter::WeaponFire);
 
 	PEI->BindAction(IA_Aiming, ETriggerEvent::Triggered, this, &ADemoCharacter::AimTrigger);
-	//PEI->BindAction(IA_Aiming, ETriggerEvent::Started, this, &ADemoCharacter::StartAiming);
-	//PEI->BindAction(IA_Aiming, ETriggerEvent::Canceled, this, &ADemoCharacter::StopAiming);
 }
 
 void ADemoCharacter::PEIDebug(const FInputActionValue& value)
@@ -271,20 +297,6 @@ bool ADemoCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& Out
 	}
 	return false;
 }
-
-//void ADemoCharacter::StartAiming()
-//{
-//	UE_LOG(LogTemp, Log, TEXT("Aiming"));
-//	bAiming = true;
-//	GetCharacterCamera()->SetFieldOfView(CameraAimingZoomFOV);
-//}
-//
-//void ADemoCharacter::StopAiming()
-//{
-//	UE_LOG(LogTemp, Log, TEXT("Stop Aiming"));
-//	bAiming = false;
-//	GetCharacterCamera()->SetFieldOfView(CameraDefaultFOV);
-//}
 
 void ADemoCharacter::AimTrigger()
 {

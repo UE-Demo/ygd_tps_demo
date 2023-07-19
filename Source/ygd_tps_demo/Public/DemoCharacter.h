@@ -6,6 +6,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
+#include "DemoItem.h"
+
 #include "Particles/ParticleSystemComponent.h"
 
 #include "Engine/SkeletalMeshSocket.h"
@@ -122,8 +124,6 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	float FOVAimingZoomInterpSpeed;
 
-	//void StartAiming();
-	//void StopAiming();
 	void AimTrigger();
 	/* Called in Tick. */
 	void AimingZoomInterp(float DeltaTime);
