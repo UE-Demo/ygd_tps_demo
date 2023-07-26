@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "DemoItem.h"
 
 #include "Particles/ParticleSystemComponent.h"
 
@@ -130,6 +131,8 @@ private:
 	bool bShouldTraceForItems;
 	int8 OverlappedItemCount;
 	FORCEINLINE int8 GetOverlappedItemCount() const { return OverlappedItemCount; }
+	
+	ADemoItem* TraceHitItem;
 
 public:
 	/* Add/Substarct OverlappedItemCount and update bShouldTraceForItems. */

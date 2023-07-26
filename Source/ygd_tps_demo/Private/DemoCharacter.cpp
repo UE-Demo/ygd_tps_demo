@@ -111,7 +111,24 @@ void ADemoCharacter::TraceForItems()
 			{
 				HitItem->GetDropInfoWidget()->SetVisibility(true);
 			}
+
+			// check if TraceItem changes or become null at this frame
+			if (TraceHitItem)
+			{
+				if (HitItem != TraceHitItem)
+				{
+					// close the old HitItem Widget
+					TraceHitItem->GetDropInfoWidget()->SetVisibility(false);
+				}
+			}
+
+			TraceHitItem = HitItem;
 		}
+	}
+	else if (TraceHitItem) // no longer overlap any items
+	{
+		// close HitItem Widget
+		TraceHitItem->GetDropInfoWidget()->SetVisibility(false);
 	}
 }
 #pragma endregion
