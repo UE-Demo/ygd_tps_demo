@@ -2,11 +2,13 @@
 
 
 #include "DemoItem.h"
+#include "DemoCharacter.h"
 
 
 
 // Sets default values
-ADemoItem::ADemoItem()
+ADemoItem::ADemoItem():
+	InteractAreaSphereRadius(150.f)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -27,6 +29,9 @@ ADemoItem::ADemoItem()
 	DropInfoWidget->SetupAttachment(GetRootComponent());
 	DropInfoWidget->SetRelativeLocation(FVector(0, 0, 100));
 
+	InteractAreaSphere = CreateDefaultSubobject<USphereComponent>(TEXT("InteractAreaSphere"));
+	InteractAreaSphere->SetupAttachment(GetRootComponent());
+	InteractAreaSphere->SetSphereRadius(InteractAreaSphereRadius);
 #pragma endregion
 }
 
@@ -37,6 +42,8 @@ void ADemoItem::BeginPlay()
 
 	DropInfoWidget->SetVisibility(false);
 	
+	InteractAreaSphere->OnComponentBeginOverlap.AddDynamic(this, &ADemoItem::OnInteractAreaStartOverlap);
+	InteractAreaSphere->OnComponentEndOverlap.AddDynamic(this, &ADemoItem::OnInteractAreaeEndOverlap);
 }
 
 // Called every frame
@@ -45,4 +52,29 @@ void ADemoItem::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
+
+void ADemoItem::OnInteractAreaStartOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor)
+	{
+		ADemoCharacter* DemoCharacter = Cast<ADemoCharacter>(OtherActor);
+		if (DemoCharacter)
+		{
+			DemoCharacter->IncrementOverlappedItemCount(1);
+		}
+	}
+}
+
+void ADemoItem::OnInteractAreaeEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherActor)
+	{
+		ADemoCharacter* DemoCharacter = Cast<ADemoCharacter>(OtherActor);
+		if (DemoCharacter)
+		{
+			DemoCharacter->IncrementOverlappedItemCount(-1);
+		}
+	}
+}
+
 

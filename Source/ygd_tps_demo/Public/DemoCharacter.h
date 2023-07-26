@@ -6,8 +6,6 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
-#include "DemoItem.h"
-
 #include "Particles/ParticleSystemComponent.h"
 
 #include "Engine/SkeletalMeshSocket.h"
@@ -40,10 +38,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-private:
 
-
-	
 
 #pragma region CameraControll
 	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -129,5 +124,22 @@ private:
 	void AimingZoomInterp(float DeltaTime);
 
 #pragma endregion
+
+#pragma region Items
+private:
+	bool bShouldTraceForItems;
+	int8 OverlappedItemCount;
+	FORCEINLINE int8 GetOverlappedItemCount() const { return OverlappedItemCount; }
+
+public:
+	/* Add/Substarct OverlappedItemCount and update bShouldTraceForItems. */
+	void IncrementOverlappedItemCount(int8 Amount);
+
+protected:
+	/* Trace for itmes if OverlappedItemCount > 0. */
+	void TraceForItems();
+#pragma endregion
+
+
 
 };

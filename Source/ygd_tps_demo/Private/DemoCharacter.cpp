@@ -2,12 +2,14 @@
 
 
 #include "DemoCharacter.h"
+#include "DemoItem.h"
 
 // Sets default values
 ADemoCharacter::ADemoCharacter() :
 	bAiming(false),
 	CameraAimingZoomFOV(60.f),
-	FOVAimingZoomInterpSpeed(20.f)
+	FOVAimingZoomInterpSpeed(20.f),
+	bShouldTraceForItems(false)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -27,8 +29,6 @@ ADemoCharacter::ADemoCharacter() :
 	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
 #pragma endregion
-
-	
 }
 
 // Called when the game starts or when spawned
@@ -47,33 +47,7 @@ void ADemoCharacter::Tick(float DeltaTime)
 
 	AimingZoomInterp(DeltaTime);
 
-	FHitResult ItemTraceResult;
-	FVector OnlyForTempNotUsed;
-	TraceUnderCrosshairs(ItemTraceResult, OnlyForTempNotUsed);
-	if (ItemTraceResult.bBlockingHit)
-	{
-		ADemoItem* HitItem = Cast<ADemoItem>(ItemTraceResult.GetActor());
-		if (HitItem && HitItem->GetDropInfoWidget())
-		{
-			HitItem->GetDropInfoWidget()->SetVisibility(true);
-			UE_LOG(LogTemp, Warning, TEXT("Trace Item"));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Not Trace Item"));
-		}
-
-		if (HitItem && HitItem->GetDropInfoWidget()->IsVisible())
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Widget Visible"));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Widget Not Visible"));
-		}
-	}
-
-
+	TraceForItems();
 }
 
 // Called to bind functionality to input
@@ -92,7 +66,6 @@ void ADemoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	Subsystem->AddMappingContext(DefaultMappingContext, 0);
 
 	UEnhancedInputComponent* PEI = Cast<UEnhancedInputComponent>(PlayerInputComponent);
-#pragma endregion
 
 	// Bind the actions
 	PEI->BindAction(IA_Debug, ETriggerEvent::Triggered, this, &ADemoCharacter::PEIDebug);
@@ -101,12 +74,49 @@ void ADemoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PEI->BindAction(IA_SemiAutoWeaponFire, ETriggerEvent::Triggered, this, &ADemoCharacter::WeaponFire);
 
 	PEI->BindAction(IA_Aiming, ETriggerEvent::Triggered, this, &ADemoCharacter::AimTrigger);
+#pragma endregion
 }
 
 void ADemoCharacter::PEIDebug(const FInputActionValue& value)
 {
 	UE_LOG(LogTemp, Warning, TEXT("PEIDebug"));
 }
+
+#pragma region Items
+void ADemoCharacter::IncrementOverlappedItemCount(int8 Amount)
+{
+	if (OverlappedItemCount + Amount <= 0)
+	{
+		OverlappedItemCount = 0;
+		bShouldTraceForItems = false;
+	}
+	else
+	{
+		OverlappedItemCount += Amount;
+		bShouldTraceForItems = true;
+	}
+}
+
+void ADemoCharacter::TraceForItems()
+{
+	if (bShouldTraceForItems)
+	{
+		FHitResult ItemTraceResult;
+		FVector OnlyForTempNotUsed;
+		TraceUnderCrosshairs(ItemTraceResult, OnlyForTempNotUsed);
+		if (ItemTraceResult.bBlockingHit)
+		{
+			ADemoItem* HitItem = Cast<ADemoItem>(ItemTraceResult.GetActor());
+			if (HitItem && HitItem->GetDropInfoWidget())
+			{
+				HitItem->GetDropInfoWidget()->SetVisibility(true);
+			}
+		}
+	}
+}
+#pragma endregion
+
+#pragma region CharacterControll
 
 void ADemoCharacter::CharacterMove(const FInputActionValue& value)
 {
@@ -139,8 +149,8 @@ void ADemoCharacter::CharacterLook(const FInputActionValue& value)
 {
 	FVector2D LookAxis = value.Get<FVector2D>();
 
-	float TurnScaleFactor{1.f};
-	float LookUpScaleFactor{1.f};
+	float TurnScaleFactor{ 1.f };
+	float LookUpScaleFactor{ 1.f };
 	//if (bAiming)
 	//{
 	//	LookUpScaleFactor = MouseAimingLookUpRate;
@@ -155,8 +165,8 @@ void ADemoCharacter::CharacterLook(const FInputActionValue& value)
 
 	AddControllerPitchInput(LookAxis.Y * LookUpScaleFactor); // look up
 
-
 }
+#pragma endregion
 
 #pragma region Aim&Shoot
 

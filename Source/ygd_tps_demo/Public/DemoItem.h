@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 
 #include "Components/BoxComponent.h"
+#include "Components/SphereComponent.h"
+#include "Components/PrimitiveComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/WidgetComponent.h"
 
@@ -38,6 +40,30 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 		class UWidgetComponent* DropInfoWidget;
+
+	/* Enable player interact area. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+		class USphereComponent* InteractAreaSphere;
+
+	float InteractAreaSphereRadius;
+
+protected:
+	UFUNCTION()
+	void OnInteractAreaStartOverlap(
+	UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnInteractAreaeEndOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex
+	);
 
 public:
 	FORCEINLINE UWidgetComponent* GetDropInfoWidget() const { return DropInfoWidget; }
