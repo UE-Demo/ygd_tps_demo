@@ -6,6 +6,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "DemoItem.h"
+#include "DemoWeapon.h"
 
 #include "Particles/ParticleSystemComponent.h"
 
@@ -94,6 +95,13 @@ public:
 #pragma endregion
 
 #pragma region Combat
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+		class ADemoWeapon* EquippedWeapon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+		TSubclassOf<ADemoWeapon> DefaultWeaponClass;
+
+	void SpawnDefaultWeapon();
 
 	const UParticleSystem* WeaponShootParticle;
 

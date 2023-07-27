@@ -38,6 +38,8 @@ void ADemoCharacter::BeginPlay()
 	
 	CameraDefaultFOV = GetCharacterCamera()->FieldOfView;
 	CameraTempFOV = CameraDefaultFOV;
+
+	SpawnDefaultWeapon();
 }
 
 // Called every frame
@@ -80,6 +82,28 @@ void ADemoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 void ADemoCharacter::PEIDebug(const FInputActionValue& value)
 {
 	UE_LOG(LogTemp, Warning, TEXT("PEIDebug"));
+}
+
+void ADemoCharacter::SpawnDefaultWeapon()
+{
+	if (DefaultWeaponClass)
+	{
+		ADemoWeapon* DefaultWeapon = GetWorld()->SpawnActor<ADemoWeapon>(DefaultWeaponClass);
+
+		const USkeletalMeshSocket* RightHandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
+
+		if (RightHandSocket)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("RightHandSocket"));
+			RightHandSocket->AttachActor(DefaultWeapon, GetMesh());
+		}
+
+		EquippedWeapon = DefaultWeapon;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Not DefaultWeaponClass"));
+	}
 }
 
 #pragma region Items
