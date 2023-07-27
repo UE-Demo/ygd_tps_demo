@@ -71,4 +71,11 @@ protected:
 
 public:
 	FORCEINLINE UWidgetComponent* GetDropInfoWidget() const { return DropInfoWidget; }
+
+	FORCEINLINE USphereComponent* GetInteractAreaSphere() const
+	{
+		return InteractAreaSphere;
+	}
+
+	FORCEINLINE UBoxComponent* GetCollisionBox() const { return CollisionBox; }
 };

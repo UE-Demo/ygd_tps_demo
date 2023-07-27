@@ -8,6 +8,12 @@
 #include "DemoItem.h"
 #include "DemoWeapon.h"
 
+#include "Components/BoxComponent.h"
+#include "Components/SphereComponent.h"
+#include "Components/PrimitiveComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/WidgetComponent.h"
+
 #include "Particles/ParticleSystemComponent.h"
 
 #include "Engine/SkeletalMeshSocket.h"
@@ -101,7 +107,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 		TSubclassOf<ADemoWeapon> DefaultWeaponClass;
 
-	void SpawnDefaultWeapon();
+	ADemoWeapon* SpawnDefaultWeapon();
+
+	void EquipWeapon(ADemoWeapon* WeaponToEquip);
 
 	const UParticleSystem* WeaponShootParticle;
 

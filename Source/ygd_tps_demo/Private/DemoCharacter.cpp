@@ -39,7 +39,7 @@ void ADemoCharacter::BeginPlay()
 	CameraDefaultFOV = GetCharacterCamera()->FieldOfView;
 	CameraTempFOV = CameraDefaultFOV;
 
-	SpawnDefaultWeapon();
+	EquipWeapon(SpawnDefaultWeapon());
 }
 
 // Called every frame
@@ -84,29 +84,39 @@ void ADemoCharacter::PEIDebug(const FInputActionValue& value)
 	UE_LOG(LogTemp, Warning, TEXT("PEIDebug"));
 }
 
-void ADemoCharacter::SpawnDefaultWeapon()
+
+
+#pragma region Items
+
+ADemoWeapon* ADemoCharacter::SpawnDefaultWeapon()
 {
 	if (DefaultWeaponClass)
 	{
-		ADemoWeapon* DefaultWeapon = GetWorld()->SpawnActor<ADemoWeapon>(DefaultWeaponClass);
-
-		const USkeletalMeshSocket* RightHandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
-
-		if (RightHandSocket)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("RightHandSocket"));
-			RightHandSocket->AttachActor(DefaultWeapon, GetMesh());
-		}
-
-		EquippedWeapon = DefaultWeapon;
+		return GetWorld()->SpawnActor<ADemoWeapon>(DefaultWeaponClass);
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Not DefaultWeaponClass"));
+		return nullptr;
 	}
 }
 
-#pragma region Items
+void ADemoCharacter::EquipWeapon(ADemoWeapon* WeaponToEquip)
+{
+	WeaponToEquip->GetInteractAreaSphere()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	WeaponToEquip->GetCollisionBox()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+
+	const USkeletalMeshSocket* RightHandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
+
+	if (RightHandSocket)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("RightHandSocket"));
+		RightHandSocket->AttachActor(WeaponToEquip, GetMesh());
+	}
+
+	EquippedWeapon = WeaponToEquip;
+}
+
 void ADemoCharacter::IncrementOverlappedItemCount(int8 Amount)
 {
 	if (OverlappedItemCount + Amount <= 0)
