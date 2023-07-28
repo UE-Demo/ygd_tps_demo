@@ -68,15 +68,17 @@ public:
 	/* Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		class UInputAction* IA_Move;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		class UInputAction* IA_Look;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		class UInputAction* IA_SemiAutoWeaponFire;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		class UInputAction* IA_Aiming;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+		class UInputAction* IA_Interact;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+		class UInputAction* IA_DropWeapon;
 
 	void PEIDebug(const FInputActionValue& value);
 	void CharacterMove(const FInputActionValue& value);
@@ -156,8 +158,10 @@ protected:
 
 	ADemoWeapon* SpawnDefaultWeapon();
 
-	void EquipWeapon(ADemoWeapon* WeaponToEquip);
+	void CharacterInteract();
 
+	void EquipWeapon(ADemoWeapon* WeaponToEquip);
+	void SwapWeapon(ADemoWeapon* WeaponToSwap);
 	void DropWeapon();
 
 #pragma endregion

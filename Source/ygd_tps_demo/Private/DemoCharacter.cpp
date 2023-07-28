@@ -76,6 +76,9 @@ void ADemoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PEI->BindAction(IA_SemiAutoWeaponFire, ETriggerEvent::Triggered, this, &ADemoCharacter::WeaponFire);
 
 	PEI->BindAction(IA_Aiming, ETriggerEvent::Triggered, this, &ADemoCharacter::AimTrigger);
+	
+	PEI->BindAction(IA_Interact, ETriggerEvent::Triggered, this, &ADemoCharacter::CharacterInteract);
+	PEI->BindAction(IA_DropWeapon, ETriggerEvent::Triggered, this, &ADemoCharacter::DropWeapon);
 #pragma endregion
 }
 
@@ -101,6 +104,17 @@ ADemoWeapon* ADemoCharacter::SpawnDefaultWeapon()
 	}
 }
 
+void ADemoCharacter::CharacterInteract()
+{
+	UE_LOG(LogTemp, Warning, TEXT("CharacterInteract"));
+	if (TraceHitItem)
+	{
+		auto TraceHitWeapon = Cast<ADemoWeapon>(TraceHitItem);
+		SwapWeapon(TraceHitWeapon);
+	}
+
+}
+
 void ADemoCharacter::EquipWeapon(ADemoWeapon* WeaponToEquip)
 {
 	const USkeletalMeshSocket* RightHandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
@@ -115,8 +129,15 @@ void ADemoCharacter::EquipWeapon(ADemoWeapon* WeaponToEquip)
 	EquippedWeapon->SetItemState(EItemState::EItemState_Equipped);
 }
 
+void ADemoCharacter::SwapWeapon(ADemoWeapon* WeaponToSwap)
+{
+	DropWeapon();
+	EquipWeapon(WeaponToSwap);
+}
+
 void ADemoCharacter::DropWeapon()
 {
+	UE_LOG(LogTemp, Warning, TEXT("DropWeapon"));
 	if (EquippedWeapon)
 	{
 		/*  bCallModify：一个布尔值，表示在分离时是否调用组件的 Modify() 函数。
@@ -126,6 +147,7 @@ void ADemoCharacter::DropWeapon()
 		FDetachmentTransformRules DetachmentTransformRules(
 			EDetachmentRule::KeepWorld, true);
 		EquippedWeapon->GetItemMesh()->DetachFromComponent(DetachmentTransformRules);
+		EquippedWeapon->SetItemState(EItemState::EItemState_Drop);
 	}
 }
 
@@ -175,6 +197,7 @@ void ADemoCharacter::TraceForItems()
 	{
 		// close HitItem Widget
 		TraceHitItem->GetDropInfoWidget()->SetVisibility(false);
+		TraceHitItem = nullptr;
 	}
 }
 #pragma endregion
