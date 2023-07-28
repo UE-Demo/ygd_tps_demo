@@ -103,9 +103,6 @@ ADemoWeapon* ADemoCharacter::SpawnDefaultWeapon()
 
 void ADemoCharacter::EquipWeapon(ADemoWeapon* WeaponToEquip)
 {
-	WeaponToEquip->GetInteractAreaSphere()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	WeaponToEquip->GetCollisionBox()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-
 	const USkeletalMeshSocket* RightHandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
 
 	if (RightHandSocket)
@@ -115,6 +112,21 @@ void ADemoCharacter::EquipWeapon(ADemoWeapon* WeaponToEquip)
 	}
 
 	EquippedWeapon = WeaponToEquip;
+	EquippedWeapon->SetItemState(EItemState::EItemState_Equipped);
+}
+
+void ADemoCharacter::DropWeapon()
+{
+	if (EquippedWeapon)
+	{
+		/*  bCallModify：一个布尔值，表示在分离时是否调用组件的 Modify() 函数。
+			LocationRule：一个 EDetachmentRule 枚举值，表示在分离时应用于位置的规则。
+			RotationRule：一个 EDetachmentRule 枚举值，表示在分离时应用于旋转的规则。
+			ScaleRule：一个 EDetachmentRule 枚举值，表示在分离时应用于缩放的规则。*/
+		FDetachmentTransformRules DetachmentTransformRules(
+			EDetachmentRule::KeepWorld, true);
+		EquippedWeapon->GetItemMesh()->DetachFromComponent(DetachmentTransformRules);
+	}
 }
 
 void ADemoCharacter::IncrementOverlappedItemCount(int8 Amount)

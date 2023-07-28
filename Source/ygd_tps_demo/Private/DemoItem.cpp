@@ -9,6 +9,7 @@
 // Sets default values
 ADemoItem::ADemoItem():
 	ItemName(FString("DefaultItemName")),
+	ItemState(EItemState::EItemState_Drop),
 	InteractAreaSphereRadius(150.f)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -45,6 +46,8 @@ void ADemoItem::BeginPlay()
 	
 	InteractAreaSphere->OnComponentBeginOverlap.AddDynamic(this, &ADemoItem::OnInteractAreaStartOverlap);
 	InteractAreaSphere->OnComponentEndOverlap.AddDynamic(this, &ADemoItem::OnInteractAreaeEndOverlap);
+
+	SwitchItemProperty(ItemState);
 }
 
 // Called every frame
@@ -76,6 +79,44 @@ void ADemoItem::OnInteractAreaeEndOverlap(UPrimitiveComponent* OverlappedCompone
 			DemoCharacter->IncrementOverlappedItemCount(-1);
 		}
 	}
+}
+
+void ADemoItem::SwitchItemProperty(EItemState State)
+{
+	switch (State)
+	{
+	case EItemState::EItemState_Drop:
+		ItemMesh->SetSimulatePhysics(false);
+		ItemMesh->SetVisibility(true);
+		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		InteractAreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+		InteractAreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+
+		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+		CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		break;
+
+	case EItemState::EItemState_Equipped:
+		ItemMesh->SetSimulatePhysics(false);
+		ItemMesh->SetVisibility(true);
+		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		InteractAreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		InteractAreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+}
+
+void ADemoItem::SetItemState(EItemState State)
+{
+	ItemState = State;
+	SwitchItemProperty(State);
 }
 
 

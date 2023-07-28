@@ -101,16 +101,6 @@ public:
 #pragma endregion
 
 #pragma region Combat
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
-		class ADemoWeapon* EquippedWeapon;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
-		TSubclassOf<ADemoWeapon> DefaultWeaponClass;
-
-	ADemoWeapon* SpawnDefaultWeapon();
-
-	void EquipWeapon(ADemoWeapon* WeaponToEquip);
-
 	const UParticleSystem* WeaponShootParticle;
 
 	/* Called when the Fire Button is pressed. */
@@ -157,6 +147,19 @@ public:
 protected:
 	/* Trace for itmes if OverlappedItemCount > 0. */
 	void TraceForItems();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+		class ADemoWeapon* EquippedWeapon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+		TSubclassOf<ADemoWeapon> DefaultWeaponClass;
+
+	ADemoWeapon* SpawnDefaultWeapon();
+
+	void EquipWeapon(ADemoWeapon* WeaponToEquip);
+
+	void DropWeapon();
+
 #pragma endregion
 
 
