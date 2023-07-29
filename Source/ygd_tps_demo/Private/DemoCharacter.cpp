@@ -85,7 +85,8 @@ void ADemoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PEI->BindAction(IA_Debug, ETriggerEvent::Triggered, this, &ADemoCharacter::PEIDebug);
 	PEI->BindAction(IA_Move, ETriggerEvent::Triggered, this, &ADemoCharacter::CharacterMove);
 	PEI->BindAction(IA_Look, ETriggerEvent::Triggered, this, &ADemoCharacter::CharacterLook);
-	PEI->BindAction(IA_SemiAutoWeaponFire, ETriggerEvent::Triggered, this, &ADemoCharacter::WeaponFire);
+	//PEI->BindAction(IA_SemiAutoWeaponFire, ETriggerEvent::Triggered, this, &ADemoCharacter::WeaponFire);
+	PEI->BindAction(IA_AutoWeaponFire, ETriggerEvent::Ongoing, this, &ADemoCharacter::AutoWeaponFire);
 
 	PEI->BindAction(IA_Aiming, ETriggerEvent::Triggered, this, &ADemoCharacter::AimTrigger);
 	
@@ -124,7 +125,6 @@ void ADemoCharacter::CharacterInteract()
 		auto TraceHitWeapon = Cast<ADemoWeapon>(TraceHitItem);
 		SwapWeapon(TraceHitWeapon);
 	}
-
 }
 
 void ADemoCharacter::GetPickupItem(ADemoItem* Item)
@@ -268,7 +268,7 @@ void ADemoCharacter::CharacterLook(const FInputActionValue& value)
 }
 #pragma endregion
 
-#pragma region Aim&Shoot
+#pragma region WeaponShoot
 
 bool ADemoCharacter::CheckWeaponAmmoEmpty()
 {
@@ -350,6 +350,12 @@ void ADemoCharacter::WeaponFire()
 	}
 	
 
+}
+
+void ADemoCharacter::AutoWeaponFire()
+{
+	UE_LOG(LogTemp, Log, TEXT("AutoWeaponFire"));
+	WeaponFire();
 }
 
 bool ADemoCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& BeamEndLocation)
@@ -439,6 +445,10 @@ bool ADemoCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& Out
 	}
 	return false;
 }
+
+#pragma endregion
+
+#pragma region WeaponAim
 
 void ADemoCharacter::AimTrigger()
 {
