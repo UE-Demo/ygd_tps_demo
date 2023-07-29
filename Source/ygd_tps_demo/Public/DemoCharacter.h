@@ -105,6 +105,8 @@ public:
 #pragma region Combat
 	const UParticleSystem* WeaponShootParticle;
 
+	bool CheckWeaponAmmoEmpty();
+
 	/* Called when the Fire Button is pressed. */
 	void WeaponFire();
 
@@ -134,12 +136,13 @@ public:
 
 #pragma endregion
 
-#pragma region Items
+#pragma region ItemCheck
 private:
 	bool bShouldTraceForItems;
 	int8 OverlappedItemCount;
 	FORCEINLINE int8 GetOverlappedItemCount() const { return OverlappedItemCount; }
 	
+	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	ADemoItem* TraceHitItem;
 
 public:
@@ -149,9 +152,11 @@ public:
 protected:
 	/* Trace for itmes if OverlappedItemCount > 0. */
 	void TraceForItems();
+#pragma endregion
 
+#pragma region Inventory
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
-		class ADemoWeapon* EquippedWeapon;
+	class ADemoWeapon* EquippedWeapon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 		TSubclassOf<ADemoWeapon> DefaultWeaponClass;
@@ -159,10 +164,21 @@ protected:
 	ADemoWeapon* SpawnDefaultWeapon();
 
 	void CharacterInteract();
+	void GetPickupItem(ADemoItem* Item);
 
 	void EquipWeapon(ADemoWeapon* WeaponToEquip);
 	void SwapWeapon(ADemoWeapon* WeaponToSwap);
 	void DropWeapon();
+
+	// Ammo Set up
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	TMap<EAmmoType, int32> AmmoAmountMap;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	int32 Start9mmAmmoAmount;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	int32 StartARAmmoAmount;
+
+	void InitializeAmmoAmout();
 
 #pragma endregion
 

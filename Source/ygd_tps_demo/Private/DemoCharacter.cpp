@@ -9,7 +9,11 @@ ADemoCharacter::ADemoCharacter() :
 	bAiming(false),
 	CameraAimingZoomFOV(60.f),
 	FOVAimingZoomInterpSpeed(20.f),
-	bShouldTraceForItems(false)
+	bShouldTraceForItems(false),
+
+	// StartingInventory
+	Start9mmAmmoAmount(50),
+	StartARAmmoAmount(30)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -39,7 +43,9 @@ void ADemoCharacter::BeginPlay()
 	CameraDefaultFOV = GetCharacterCamera()->FieldOfView;
 	CameraTempFOV = CameraDefaultFOV;
 
+	InitializeAmmoAmout();
 	EquipWeapon(SpawnDefaultWeapon());
+
 }
 
 // Called every frame
@@ -115,6 +121,14 @@ void ADemoCharacter::CharacterInteract()
 
 }
 
+void ADemoCharacter::GetPickupItem(ADemoItem* Item)
+{
+	if (auto Weapon = Cast<ADemoWeapon>(Item))
+	{
+		SwapWeapon(Weapon);
+	}
+}
+
 void ADemoCharacter::EquipWeapon(ADemoWeapon* WeaponToEquip)
 {
 	const USkeletalMeshSocket* RightHandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
@@ -149,6 +163,12 @@ void ADemoCharacter::DropWeapon()
 		EquippedWeapon->GetItemMesh()->DetachFromComponent(DetachmentTransformRules);
 		EquippedWeapon->SetItemState(EItemState::EItemState_Drop);
 	}
+}
+
+void ADemoCharacter::InitializeAmmoAmout()
+{
+	AmmoAmountMap.Add(EAmmoType::EAmmoType_9mm, Start9mmAmmoAmount);
+	AmmoAmountMap.Add(EAmmoType::EAmmoType_AR, StartARAmmoAmount);
 }
 
 void ADemoCharacter::IncrementOverlappedItemCount(int8 Amount)
@@ -256,54 +276,73 @@ void ADemoCharacter::CharacterLook(const FInputActionValue& value)
 
 #pragma region Aim&Shoot
 
+bool ADemoCharacter::CheckWeaponAmmoEmpty()
+{
+	if (!EquippedWeapon) { return false; }
+
+	return { EquippedWeapon->GetAmmoAmount() == 0 };
+}
+
 void ADemoCharacter::WeaponFire()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Fire"));
-
-	const USkeletalMeshSocket* BarrelSocket = GetMesh()->GetSocketByName("BarrelSocket");
-
-	const FTransform BarrelSocketTransform = BarrelSocket->GetSocketTransform(GetMesh());
-
-	FVector BeamEndLocation;
-
-	// 在命中点生成命中特效
-	if (GetBeamEndLocation(
-		BarrelSocketTransform.GetLocation(), BeamEndLocation)) // 判定命中同时获取命中信息
+	if (CheckWeaponAmmoEmpty())
 	{
-		if (ImpactParticles)
+		UE_LOG(LogTemp, Warning, TEXT("Ammo Empty"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Fire"));
+
+		const USkeletalMeshSocket* BarrelSocket = GetMesh()->GetSocketByName("BarrelSocket");
+
+		const FTransform BarrelSocketTransform = BarrelSocket->GetSocketTransform(GetMesh());
+
+		FVector BeamEndLocation;
+
+		// 在命中点生成命中特效
+		if (GetBeamEndLocation(
+			BarrelSocketTransform.GetLocation(), BeamEndLocation)) // 判定命中同时获取命中信息
 		{
-			UGameplayStatics::SpawnEmitterAtLocation(
+			if (ImpactParticles)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(
+					GetWorld(),
+					ImpactParticles,
+					BeamEndLocation);
+			}
+		}
+		else // not hit 
+		{
+			UE_LOG(LogTemp, Log, TEXT("Not Hit BeanEndLocation: %s"), *BeamEndLocation.ToString());
+		}
+
+		if (BeamParticles)
+		{
+			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
 				GetWorld(),
-				ImpactParticles,
-				BeamEndLocation);
+				BeamParticles,
+				BarrelSocketTransform);
+			if (Beam)
+			{
+				Beam->SetVectorParameter(FName("Target"), BeamEndLocation);
+				UE_LOG(LogTemp, Log, TEXT("Hit Location: %s"), *BeamEndLocation.ToString());
+			}
 		}
-	}
-	else // not hit 
-	{
-		UE_LOG(LogTemp, Log, TEXT("Not Hit BeanEndLocation: %s"), *BeamEndLocation.ToString());
-	}
 
-	if (BeamParticles)
-	{
-		UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
-			GetWorld(),
-			BeamParticles,
-			BarrelSocketTransform);
-		if (Beam)
-		{
-			Beam->SetVectorParameter(FName("Target"), BeamEndLocation);
-			UE_LOG(LogTemp, Log, TEXT("Hit Location: %s"), *BeamEndLocation.ToString());
-		}
-	}
-
-
-	AnimInstance = GetMesh()->GetAnimInstance();
-	if (AnimInstance && HipFireMontage)
-	{
 		AnimInstance = GetMesh()->GetAnimInstance();
-		AnimInstance->Montage_Play(HipFireMontage);
-		AnimInstance->Montage_JumpToSection(FName("StartFire"));
+		if (AnimInstance && HipFireMontage)
+		{
+			AnimInstance = GetMesh()->GetAnimInstance();
+			AnimInstance->Montage_Play(HipFireMontage);
+			AnimInstance->Montage_JumpToSection(FName("StartFire"));
+		}
+
+		if (EquippedWeapon)
+		{
+			EquippedWeapon->DecrementAmmoAmount(1);
+		}
 	}
+
 }
 
 bool ADemoCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& BeamEndLocation)
