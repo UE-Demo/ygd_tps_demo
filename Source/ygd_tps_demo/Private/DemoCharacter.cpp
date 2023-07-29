@@ -162,6 +162,7 @@ void ADemoCharacter::DropWeapon()
 			EDetachmentRule::KeepWorld, true);
 		EquippedWeapon->GetItemMesh()->DetachFromComponent(DetachmentTransformRules);
 		EquippedWeapon->SetItemState(EItemState::EItemState_Drop);
+		EquippedWeapon = nullptr;
 	}
 }
 
@@ -285,17 +286,25 @@ bool ADemoCharacter::CheckWeaponAmmoEmpty()
 
 void ADemoCharacter::WeaponFire()
 {
+	if (EquippedWeapon == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No Equipped Weapon"));
+		return;
+	}
+	
 	if (CheckWeaponAmmoEmpty())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Ammo Empty"));
+		return;
 	}
-	else
+
+	UE_LOG(LogTemp, Warning, TEXT("Fire"));
+
+	const USkeletalMeshSocket* BarrelSocket =
+		EquippedWeapon->GetItemMesh()->GetSocketByName("BarrelSocket");
+	if (BarrelSocket)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Fire"));
-
-		const USkeletalMeshSocket* BarrelSocket = GetMesh()->GetSocketByName("BarrelSocket");
-
-		const FTransform BarrelSocketTransform = BarrelSocket->GetSocketTransform(GetMesh());
+		const FTransform BarrelSocketTransform = BarrelSocket->GetSocketTransform(EquippedWeapon->GetItemMesh());
 
 		FVector BeamEndLocation;
 
@@ -342,6 +351,11 @@ void ADemoCharacter::WeaponFire()
 			EquippedWeapon->DecrementAmmoAmount(1);
 		}
 	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No BarrelSocket On the Weapon Mesh!!!"));
+	}
+	
 
 }
 
