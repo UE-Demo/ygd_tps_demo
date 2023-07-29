@@ -6,9 +6,15 @@
 
 // Sets default values
 ADemoCharacter::ADemoCharacter() :
+	// Aim
 	bAiming(false),
 	CameraAimingZoomFOV(60.f),
-	FOVAimingZoomInterpSpeed(20.f),
+	AimingFOVZoomInterpSpeed(20.f),
+
+	LookSensitivity(1.f),
+	DefaultLookSensitivity(1.f),
+	AimingLookSensitivity(0.25f),
+
 	bShouldTraceForItems(false),
 
 	// StartingInventory
@@ -256,21 +262,8 @@ void ADemoCharacter::CharacterLook(const FInputActionValue& value)
 {
 	FVector2D LookAxis = value.Get<FVector2D>();
 
-	float TurnScaleFactor{ 1.f };
-	float LookUpScaleFactor{ 1.f };
-	//if (bAiming)
-	//{
-	//	LookUpScaleFactor = MouseAimingLookUpRate;
-	//	TurnScaleFactor = MouseAimingTurnRate;
-	//}
-	//else
-	//{
-	//	LookUpScaleFactor = MouseHipLookUpRate;
-	//	TurnScaleFactor = MouseHipTurnRate;
-	//}
-	AddControllerYawInput(LookAxis.X * TurnScaleFactor); // turn
-
-	AddControllerPitchInput(LookAxis.Y * LookUpScaleFactor); // look up
+	AddControllerYawInput(LookAxis.X * LookSensitivity); // turn
+	AddControllerPitchInput(LookAxis.Y * LookSensitivity); // look up
 
 }
 #pragma endregion
@@ -288,17 +281,17 @@ void ADemoCharacter::WeaponFire()
 {
 	if (EquippedWeapon == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No Equipped Weapon"));
+		UE_LOG(LogTemp, Log, TEXT("No Equipped Weapon"));
 		return;
 	}
 	
 	if (CheckWeaponAmmoEmpty())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Ammo Empty"));
+		UE_LOG(LogTemp, Log, TEXT("Ammo Empty"));
 		return;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Fire"));
+	UE_LOG(LogTemp, Log, TEXT("Fire"));
 
 	const USkeletalMeshSocket* BarrelSocket =
 		EquippedWeapon->GetItemMesh()->GetSocketByName("BarrelSocket");
@@ -453,12 +446,14 @@ void ADemoCharacter::AimTrigger()
 	{
 		UE_LOG(LogTemp, Log, TEXT("Stop Aiming"));
 		bAiming = false;
+		LookSensitivity = DefaultLookSensitivity;
 		GetCharacterCamera()->SetFieldOfView(CameraDefaultFOV);
 	}
 	else
 	{
 		UE_LOG(LogTemp, Log, TEXT("Aiming"));
 		bAiming = true;
+		LookSensitivity = AimingLookSensitivity;
 		GetCharacterCamera()->SetFieldOfView(CameraAimingZoomFOV);
 	}
 }
@@ -467,12 +462,12 @@ void ADemoCharacter::AimingZoomInterp(float DeltaTime)
 {
 	if (bAiming)
 	{
-		CameraTempFOV = FMath::FInterpTo(CameraTempFOV, CameraAimingZoomFOV, DeltaTime,FOVAimingZoomInterpSpeed);
+		CameraTempFOV = FMath::FInterpTo(CameraTempFOV, CameraAimingZoomFOV, DeltaTime, AimingFOVZoomInterpSpeed);
 		GetCharacterCamera()->SetFieldOfView(CameraTempFOV);
 	}
 	else
 	{
-		CameraTempFOV = FMath::FInterpTo(CameraTempFOV, CameraDefaultFOV, DeltaTime, FOVAimingZoomInterpSpeed);
+		CameraTempFOV = FMath::FInterpTo(CameraTempFOV, CameraDefaultFOV, DeltaTime, AimingFOVZoomInterpSpeed);
 		GetCharacterCamera()->SetFieldOfView(CameraTempFOV);
 	}
 }

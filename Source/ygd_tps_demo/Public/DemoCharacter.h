@@ -70,6 +70,7 @@ public:
 		class UInputAction* IA_Move;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		class UInputAction* IA_Look;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		class UInputAction* IA_SemiAutoWeaponFire;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -103,8 +104,6 @@ public:
 #pragma endregion
 
 #pragma region Combat
-	const UParticleSystem* WeaponShootParticle;
-
 	bool CheckWeaponAmmoEmpty();
 
 	/* Called when the Fire Button is pressed. */
@@ -126,9 +125,16 @@ public:
 	float CameraAimingZoomFOV;
 	/* Use for Aiming Interpolation FOV. */
 	float CameraTempFOV;
+	float AimingFOVZoomInterpSpeed;
 
+	float LookSensitivity;
+
+	/* Look rate when not aiming. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	float FOVAimingZoomInterpSpeed;
+		float DefaultLookSensitivity;
+	/* Look rate when aiming. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+		float AimingLookSensitivity;
 
 	void AimTrigger();
 	/* Called in Tick. */
