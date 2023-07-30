@@ -119,7 +119,6 @@ public:
 
 	/* Called when the Fire Button is pressed. */
 	void WeaponFire();
-	void AutoWeaponFire();
 
 	/* Return HitResult from crosshair. */
 	bool GetBeamEndLocation(

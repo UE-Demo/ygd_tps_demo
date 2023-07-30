@@ -32,25 +32,44 @@ public:
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	EFireMode WeaponFireMode;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	/* Interval between two fires in auto fire mode. */
+	float AutoFireInterval;
 
+	FTimerHandle AutoFireTimerHandle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	bool bCanFire;
+	void ResetFireTimer();
+
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	int32 AmmoAmount;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	int32 BulletMaxAmmo;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-		float ReloadingAmmoTime;
+	float ReloadTime;
+	bool bReloading;
+	FTimerHandle ReloadTimerHandle;
+
+	void CompleteReloadAmmo(int32 ReloadAmmoAmount);
 
 public:
 	FORCEINLINE EFireMode GetWeaponFireMode() const { return WeaponFireMode; }
 	void SetWeaponFireMode(EFireMode NewWeaponFireMode);
 
+	FORCEINLINE bool GetCanFire() const { return bCanFire; }
+	FORCEINLINE float GetAutoFireInterval() const { return AutoFireInterval; }
+
+	FORCEINLINE bool GetReloading() const { return bReloading; }
 	FORCEINLINE int32 GetAmmoAmount() const { return AmmoAmount; }
 	FORCEINLINE int32 GetBulletMaxAmmo() const { return BulletMaxAmmo; }
-	FORCEINLINE float GetReloadingAmmoTime() const { return ReloadingAmmoTime; }
+	FORCEINLINE float GetReloadingAmmoTime() const { return ReloadTime; }
 
 	/* Called when fire weapon. */
 	void DecrementAmmoAmount(int32 DecrementAmount);
 	void ReloadAmmo(int32 ReloadAmmoAmount);
+
+	void FireTimer();
 };

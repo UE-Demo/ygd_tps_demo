@@ -91,8 +91,6 @@ void ADemoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PEI->BindAction(IA_Look, ETriggerEvent::Triggered, this, &ADemoCharacter::CharacterLook);
 
 	PEI->BindAction(IA_WeaponFire, ETriggerEvent::Ongoing, this, &ADemoCharacter::WeaponFire);
-	PEI->BindAction(IA_WeaponFire, ETriggerEvent::Canceled, this, &ADemoCharacter::PEIDebug);
-	PEI->BindAction(IA_WeaponFire, ETriggerEvent::Completed, this, &ADemoCharacter::PEIDebug);
 
 	PEI->BindAction(IA_ReloadAmmo, ETriggerEvent::Triggered, this, &ADemoCharacter::ReloadAmmo);
 
@@ -318,73 +316,73 @@ void ADemoCharacter::WeaponFire()
 	const USkeletalMeshSocket* BarrelSocket =
 		EquippedWeapon->GetItemMesh()->GetSocketByName("BarrelSocket");
 
-	if (BarrelSocket)
+	if (EquippedWeapon->GetCanFire() && !EquippedWeapon->GetReloading())
 	{
-		const FTransform BarrelSocketTransform = BarrelSocket->GetSocketTransform(EquippedWeapon->GetItemMesh());
+		EquippedWeapon->FireTimer();
 
-		FVector BeamEndLocation;
-
-		// 在命中点生成命中特效
-		if (GetBeamEndLocation(
-			BarrelSocketTransform.GetLocation(), BeamEndLocation)) // 判定命中同时获取命中信息
+		if (BarrelSocket)
 		{
-			if (ImpactParticles)
+			const FTransform BarrelSocketTransform = BarrelSocket->GetSocketTransform(EquippedWeapon->GetItemMesh());
+
+			FVector BeamEndLocation;
+
+			// 在命中点生成命中特效
+			if (GetBeamEndLocation(
+				BarrelSocketTransform.GetLocation(), BeamEndLocation)) // 判定命中同时获取命中信息
 			{
-				UGameplayStatics::SpawnEmitterAtLocation(
+				if (ImpactParticles)
+				{
+					UGameplayStatics::SpawnEmitterAtLocation(
+						GetWorld(),
+						ImpactParticles,
+						BeamEndLocation);
+				}
+			}
+
+			// 弹道特效
+			if (BeamParticles)
+			{
+				UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
 					GetWorld(),
-					ImpactParticles,
-					BeamEndLocation);
+					BeamParticles,
+					BarrelSocketTransform);
+				if (Beam)
+				{
+					Beam->SetVectorParameter(FName("Target"), BeamEndLocation);
+				}
 			}
-		}
 
-		// 弹道特效
-		if (BeamParticles)
-		{
-			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
-				GetWorld(),
-				BeamParticles,
-				BarrelSocketTransform);
-			if (Beam)
+			// 枪声
+			if (GunShotSounds)
 			{
-				Beam->SetVectorParameter(FName("Target"), BeamEndLocation);
+				UGameplayStatics::PlaySound2D(this, GunShotSounds);
+			}
+
+			// 射击动画蒙太奇
+			AnimInstance = GetMesh()->GetAnimInstance();
+			if (AnimInstance && HipFireMontage)
+			{
+				AnimInstance = GetMesh()->GetAnimInstance();
+				AnimInstance->Montage_Play(HipFireMontage);
+				AnimInstance->Montage_JumpToSection(FName("StartFire"));
+			}
+
+			// 弹药消耗
+			if (EquippedWeapon)
+			{
+				EquippedWeapon->DecrementAmmoAmount(1);
+				UE_LOG(LogTemp, Log, TEXT("Ammo: %d"), EquippedWeapon->GetAmmoAmount());
+				UE_LOG(LogTemp, Log, TEXT("Ammo Empty: %s"), CheckWeaponAmmoEmpty() ? TEXT("true") : TEXT("false"));
 			}
 		}
-		
-		// 枪声
-		if (GunShotSounds)
+		else
 		{
-			UGameplayStatics::PlaySound2D(this, GunShotSounds);
+			UE_LOG(LogTemp, Warning, TEXT("No BarrelSocket On the Weapon Mesh!!!"));
 		}
 
-		// 射击动画蒙太奇
-		AnimInstance = GetMesh()->GetAnimInstance();
-		if (AnimInstance && HipFireMontage)
-		{
-			AnimInstance = GetMesh()->GetAnimInstance();
-			AnimInstance->Montage_Play(HipFireMontage);
-			AnimInstance->Montage_JumpToSection(FName("StartFire"));
-		}
+	}
 
-		// 弹药消耗
-		if (EquippedWeapon)
-		{
-			EquippedWeapon->DecrementAmmoAmount(1);
-			UE_LOG(LogTemp, Log, TEXT("Ammo: %d"), EquippedWeapon->GetAmmoAmount());
-			UE_LOG(LogTemp, Log, TEXT("Ammo Empty: %s"), CheckWeaponAmmoEmpty() ? TEXT("true") : TEXT("false"));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No BarrelSocket On the Weapon Mesh!!!"));
-	}
 	
-	UE_LOG(LogTemp, Log, TEXT("---------End----------"));
-}
-
-void ADemoCharacter::AutoWeaponFire()
-{
-	UE_LOG(LogTemp, Log, TEXT("AutoWeaponFire"));
-	WeaponFire();
 }
 
 void ADemoCharacter::ReloadAmmo()
