@@ -15,7 +15,11 @@ ADemoCharacter::ADemoCharacter() :
 	DefaultLookSensitivity(1.f),
 	AimingLookSensitivity(0.25f),
 
+	// Shoot
+	bShooting(false),
 	bShouldTraceForItems(false),
+
+	bReloadingAmmo(false),
 
 	// StartingInventory
 	Start9mmAmmoAmount(50),
@@ -29,7 +33,7 @@ ADemoCharacter::ADemoCharacter() :
 	CameraSpringArm->SetupAttachment(RootComponent);
 	CameraSpringArm->TargetArmLength = 300.f;
 	CameraSpringArm->bUsePawnControlRotation = true;
-	CameraSpringArm->SocketOffset = FVector(0.f, -50.f, 50.f);
+	CameraSpringArm->SocketOffset = FVector(0.f, -150.f, 50.f);
 
 	CharacterCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("CharacterCamera"));
 	CharacterCamera->SetupAttachment(CameraSpringArm, USpringArmComponent::SocketName);
@@ -85,8 +89,13 @@ void ADemoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PEI->BindAction(IA_Debug, ETriggerEvent::Triggered, this, &ADemoCharacter::PEIDebug);
 	PEI->BindAction(IA_Move, ETriggerEvent::Triggered, this, &ADemoCharacter::CharacterMove);
 	PEI->BindAction(IA_Look, ETriggerEvent::Triggered, this, &ADemoCharacter::CharacterLook);
-	//PEI->BindAction(IA_SemiAutoWeaponFire, ETriggerEvent::Triggered, this, &ADemoCharacter::WeaponFire);
-	PEI->BindAction(IA_AutoWeaponFire, ETriggerEvent::Ongoing, this, &ADemoCharacter::AutoWeaponFire);
+
+	PEI->BindAction(IA_WeaponFire, ETriggerEvent::Ongoing, this, &ADemoCharacter::WeaponFire);
+	PEI->BindAction(IA_WeaponFire, ETriggerEvent::Canceled, this, &ADemoCharacter::PEIDebug);
+	PEI->BindAction(IA_WeaponFire, ETriggerEvent::Completed, this, &ADemoCharacter::PEIDebug);
+
+	PEI->BindAction(IA_ReloadAmmo, ETriggerEvent::Triggered, this, &ADemoCharacter::ReloadAmmo);
+
 
 	PEI->BindAction(IA_Aiming, ETriggerEvent::Triggered, this, &ADemoCharacter::AimTrigger);
 	
@@ -100,10 +109,12 @@ void ADemoCharacter::PEIDebug(const FInputActionValue& value)
 	UE_LOG(LogTemp, Warning, TEXT("PEIDebug"));
 }
 
-
+void PEIDebugA(const FInputActionValue& value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("PEIDebugA"));
+}
 
 #pragma region Items
-
 ADemoWeapon* ADemoCharacter::SpawnDefaultWeapon()
 {
 	if (DefaultWeaponClass)
@@ -279,6 +290,8 @@ bool ADemoCharacter::CheckWeaponAmmoEmpty()
 
 void ADemoCharacter::WeaponFire()
 {
+	UE_LOG(LogTemp, Log, TEXT("---------Start----------"));
+
 	if (EquippedWeapon == nullptr)
 	{
 		UE_LOG(LogTemp, Log, TEXT("No Equipped Weapon"));
@@ -288,6 +301,15 @@ void ADemoCharacter::WeaponFire()
 	if (CheckWeaponAmmoEmpty())
 	{
 		UE_LOG(LogTemp, Log, TEXT("Ammo Empty"));
+		return;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Ammo Not Empty"));
+	}
+
+	if (bReloadingAmmo)
+	{
 		return;
 	}
 
@@ -314,12 +336,8 @@ void ADemoCharacter::WeaponFire()
 					BeamEndLocation);
 			}
 		}
-		else // not hit 
-		{
-			UE_LOG(LogTemp, Log, TEXT("Not Hit BeanEndLocation: %s"), *BeamEndLocation.ToString());
-		}
 
-		// 弹道
+		// 弹道特效
 		if (BeamParticles)
 		{
 			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
@@ -329,7 +347,6 @@ void ADemoCharacter::WeaponFire()
 			if (Beam)
 			{
 				Beam->SetVectorParameter(FName("Target"), BeamEndLocation);
-				UE_LOG(LogTemp, Log, TEXT("Hit Location: %s"), *BeamEndLocation.ToString());
 			}
 		}
 		
@@ -352,6 +369,8 @@ void ADemoCharacter::WeaponFire()
 		if (EquippedWeapon)
 		{
 			EquippedWeapon->DecrementAmmoAmount(1);
+			UE_LOG(LogTemp, Log, TEXT("Ammo: %d"), EquippedWeapon->GetAmmoAmount());
+			UE_LOG(LogTemp, Log, TEXT("Ammo Empty: %s"), CheckWeaponAmmoEmpty() ? TEXT("true") : TEXT("false"));
 		}
 	}
 	else
@@ -359,13 +378,18 @@ void ADemoCharacter::WeaponFire()
 		UE_LOG(LogTemp, Warning, TEXT("No BarrelSocket On the Weapon Mesh!!!"));
 	}
 	
-
+	UE_LOG(LogTemp, Log, TEXT("---------End----------"));
 }
 
 void ADemoCharacter::AutoWeaponFire()
 {
 	UE_LOG(LogTemp, Log, TEXT("AutoWeaponFire"));
 	WeaponFire();
+}
+
+void ADemoCharacter::ReloadAmmo()
+{
+	EquippedWeapon->ReloadAmmo(EquippedWeapon->GetBulletMaxAmmo());
 }
 
 bool ADemoCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& BeamEndLocation)
@@ -491,7 +515,6 @@ void ADemoCharacter::AimingZoomInterp(float DeltaTime)
 		GetCharacterCamera()->SetFieldOfView(CameraTempFOV);
 	}
 }
-
 
 
 #pragma endregion

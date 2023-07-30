@@ -74,10 +74,9 @@ public:
 		class UInputAction* IA_Look;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-		class UInputAction* IA_SemiAutoWeaponFire;
+		class UInputAction* IA_WeaponFire;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-		class UInputAction* IA_AutoWeaponFire;
-
+		class UInputAction* IA_ReloadAmmo;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		class UInputAction* IA_Aiming;
 
@@ -86,9 +85,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		class UInputAction* IA_DropWeapon;
 
-	void PEIDebug(const FInputActionValue& value);
 	void CharacterMove(const FInputActionValue& value);
 	void CharacterLook(const FInputActionValue& value);
+
+	void PEIDebug(const FInputActionValue& value);
+	void PEIDebugA(const FInputActionValue& value);
 #pragma endregion
 
 #pragma region Anim
@@ -112,11 +113,12 @@ public:
 #pragma endregion
 
 #pragma region Combat
+
 	bool CheckWeaponAmmoEmpty();
+	bool bShooting;
 
 	/* Called when the Fire Button is pressed. */
 	void WeaponFire();
-
 	void AutoWeaponFire();
 
 	/* Return HitResult from crosshair. */
@@ -128,7 +130,6 @@ public:
 		FHitResult& OutHitResult,
 		FVector& OutHitLocation);
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	bool bAiming;
 
 	float CameraDefaultFOV;
@@ -149,6 +150,9 @@ public:
 	void AimTrigger();
 	/* Called in Tick. */
 	void AimingZoomInterp(float DeltaTime);
+
+	bool bReloadingAmmo;
+	void ReloadAmmo();
 
 #pragma endregion
 
