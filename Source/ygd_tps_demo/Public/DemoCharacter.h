@@ -14,7 +14,9 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/WidgetComponent.h"
 
+// Assets
 #include "Particles/ParticleSystemComponent.h"
+#include "Sound/SoundCue.h"
 
 #include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/Character.h"
@@ -98,12 +100,15 @@ public:
 
 #pragma region Asset
 	/* Particles spawned upon bullet impact */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Assets, meta = (AllowPrivateAccess = "true"))
 		UParticleSystem* ImpactParticles;
 
 	/* Smoke trail for bullets */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Assets, meta = (AllowPrivateAccess = "true"))
 		UParticleSystem* BeamParticles;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Assets, meta = (AllowPrivateAccess = "true"))
+	class USoundCue* GunShotSounds;
 #pragma endregion
 
 #pragma region Combat

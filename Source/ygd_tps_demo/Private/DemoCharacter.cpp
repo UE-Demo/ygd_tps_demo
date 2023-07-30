@@ -295,6 +295,7 @@ void ADemoCharacter::WeaponFire()
 
 	const USkeletalMeshSocket* BarrelSocket =
 		EquippedWeapon->GetItemMesh()->GetSocketByName("BarrelSocket");
+
 	if (BarrelSocket)
 	{
 		const FTransform BarrelSocketTransform = BarrelSocket->GetSocketTransform(EquippedWeapon->GetItemMesh());
@@ -318,6 +319,7 @@ void ADemoCharacter::WeaponFire()
 			UE_LOG(LogTemp, Log, TEXT("Not Hit BeanEndLocation: %s"), *BeamEndLocation.ToString());
 		}
 
+		// µ¯µÀ
 		if (BeamParticles)
 		{
 			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
@@ -330,7 +332,14 @@ void ADemoCharacter::WeaponFire()
 				UE_LOG(LogTemp, Log, TEXT("Hit Location: %s"), *BeamEndLocation.ToString());
 			}
 		}
+		
+		// Ç¹Éù
+		if (GunShotSounds)
+		{
+			UGameplayStatics::PlaySound2D(this, GunShotSounds);
+		}
 
+		// Éä»÷¶¯»­ÃÉÌ«Ææ
 		AnimInstance = GetMesh()->GetAnimInstance();
 		if (AnimInstance && HipFireMontage)
 		{
@@ -339,6 +348,7 @@ void ADemoCharacter::WeaponFire()
 			AnimInstance->Montage_JumpToSection(FName("StartFire"));
 		}
 
+		// µ¯Ò©ÏûºÄ
 		if (EquippedWeapon)
 		{
 			EquippedWeapon->DecrementAmmoAmount(1);
