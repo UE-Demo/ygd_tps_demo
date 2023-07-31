@@ -17,6 +17,7 @@ UENUM()
 enum class EItemState : uint8
 {
 	EItemState_Drop UMETA(DisplayName = "Drop"),
+	EItemState_Falling UMETA(DisplayName = "Falling"),
 	EItemState_Equipped UMETA(DisplayName = "Equipped"),
 	EItemState_InInventory UMETA(DisplayName = "InInventory"),
 };
