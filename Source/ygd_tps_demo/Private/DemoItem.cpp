@@ -19,6 +19,7 @@ ADemoItem::ADemoItem():
 
 	ItemMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ItemMesh"));
 	SetRootComponent(ItemMesh);
+	ItemMesh->SetSimulatePhysics(false);
 
 	CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
 	CollisionBox->SetupAttachment(ItemMesh);
@@ -99,6 +100,20 @@ void ADemoItem::SwitchItemProperty(EItemState State)
 		CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		break;
 
+	case EItemState::EItemState_Falling:
+		UE_LOG(LogTemp, Log, TEXT("Weapon Falling"));
+		ItemMesh->SetSimulatePhysics(true);
+		ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		ItemMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic,
+			ECollisionResponse::ECR_Block);
+
+		InteractAreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		InteractAreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 	case EItemState::EItemState_Equipped:
 		ItemMesh->SetSimulatePhysics(false);
 		ItemMesh->SetVisibility(true);
@@ -110,6 +125,7 @@ void ADemoItem::SwitchItemProperty(EItemState State)
 
 		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 	}
 }
 

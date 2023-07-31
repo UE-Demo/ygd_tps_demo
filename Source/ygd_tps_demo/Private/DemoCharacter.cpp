@@ -54,6 +54,7 @@ void ADemoCharacter::BeginPlay()
 	CameraTempFOV = CameraDefaultFOV;
 
 	InitializeAmmoAmout();
+
 	EquipWeapon(SpawnDefaultWeapon());
 
 }
@@ -66,6 +67,17 @@ void ADemoCharacter::Tick(float DeltaTime)
 	AimingZoomInterp(DeltaTime);
 
 	TraceForItems();
+	
+	/*switch (EquippedWeapon->GetItemState())
+	{
+	case EItemState::EItemState_Drop:
+		UE_LOG(LogTemp, Log, TEXT("Weapon State: Drop"));
+	case EItemState::EItemState_Falling:
+		UE_LOG(LogTemp, Log, TEXT("Weapon State: Falling"));
+	case EItemState::EItemState_Equipped:
+		UE_LOG(LogTemp, Log, TEXT("Weapon State: Equipped"));
+	}*/
+
 }
 
 // Called to bind functionality to input
@@ -166,17 +178,14 @@ void ADemoCharacter::SwapWeapon(ADemoWeapon* WeaponToSwap)
 
 void ADemoCharacter::DropWeapon()
 {
-	UE_LOG(LogTemp, Warning, TEXT("DropWeapon"));
 	if (EquippedWeapon)
 	{
-		/*  bCallModify：一个布尔值，表示在分离时是否调用组件的 Modify() 函数。
-			LocationRule：一个 EDetachmentRule 枚举值，表示在分离时应用于位置的规则。
-			RotationRule：一个 EDetachmentRule 枚举值，表示在分离时应用于旋转的规则。
-			ScaleRule：一个 EDetachmentRule 枚举值，表示在分离时应用于缩放的规则。*/
 		FDetachmentTransformRules DetachmentTransformRules(
 			EDetachmentRule::KeepWorld, true);
 		EquippedWeapon->GetItemMesh()->DetachFromComponent(DetachmentTransformRules);
+
 		EquippedWeapon->SetItemState(EItemState::EItemState_Drop);
+		
 		EquippedWeapon = nullptr;
 	}
 }
@@ -387,7 +396,11 @@ void ADemoCharacter::WeaponFire()
 
 void ADemoCharacter::ReloadAmmo()
 {
-	EquippedWeapon->ReloadAmmo(EquippedWeapon->GetBulletMaxAmmo());
+	if (EquippedWeapon&&!EquippedWeapon->GetReloading())
+	{
+		EquippedWeapon->ReloadAmmo(EquippedWeapon->GetBulletMaxAmmo());
+	}
+
 }
 
 bool ADemoCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& BeamEndLocation)
