@@ -88,6 +88,7 @@ void ADemoItem::SwitchItemProperty(EItemState State)
 	{
 	case EItemState::EItemState_Drop:
 		ItemMesh->SetSimulatePhysics(false);
+		ItemMesh->SetEnableGravity(false);
 		ItemMesh->SetVisibility(true);
 		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -96,16 +97,21 @@ void ADemoItem::SwitchItemProperty(EItemState State)
 		InteractAreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
 		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-		CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+		CollisionBox->SetCollisionResponseToChannel(
+			ECollisionChannel::ECC_Visibility, 
+			ECollisionResponse::ECR_Block);
 		CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		break;
 
 	case EItemState::EItemState_Falling:
 		UE_LOG(LogTemp, Log, TEXT("Weapon Falling"));
-		ItemMesh->SetSimulatePhysics(true);
 		ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		ItemMesh->SetSimulatePhysics(true);
+		ItemMesh->SetEnableGravity(true);
+		ItemMesh->SetVisibility(true);
 		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-		ItemMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic,
+		ItemMesh->SetCollisionResponseToChannel(
+			ECollisionChannel::ECC_WorldStatic,
 			ECollisionResponse::ECR_Block);
 
 		InteractAreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
@@ -115,8 +121,10 @@ void ADemoItem::SwitchItemProperty(EItemState State)
 		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	case EItemState::EItemState_Equipped:
+		// DropInfoWidget->SetVisibility(false);
 		ItemMesh->SetSimulatePhysics(false);
-		ItemMesh->SetVisibility(true);
+		ItemMesh->SetEnableGravity(false);
+		ItemMesh->SetVisibility(false);
 		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
