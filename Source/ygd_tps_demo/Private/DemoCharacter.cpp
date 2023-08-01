@@ -184,8 +184,9 @@ void ADemoCharacter::DropWeapon()
 			EDetachmentRule::KeepWorld, true);
 		EquippedWeapon->GetItemMesh()->DetachFromComponent(DetachmentTransformRules);
 
-		EquippedWeapon->SetItemState(EItemState::EItemState_Falling);
-		
+		// EquippedWeapon->SetItemState(EItemState::EItemState_Falling);
+		EquippedWeapon->ItemStartFalling();
+
 		EquippedWeapon = nullptr;
 	}
 }

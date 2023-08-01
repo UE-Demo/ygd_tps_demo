@@ -87,6 +87,14 @@ protected:
 
 	void SwitchItemProperty(EItemState State);
 
+	bool bFalling;
+	FTimerHandle ItemFallingTimer;
+	float ItemFallingTime;
+public:
+	void ItemStartFalling();
+private:
+	void ItemStopFalling();
+
 public:
 	FORCEINLINE UWidgetComponent* GetDropInfoWidget() const { return DropInfoWidget; }
 	FORCEINLINE USphereComponent* GetInteractAreaSphere() const{ return InteractAreaSphere; }

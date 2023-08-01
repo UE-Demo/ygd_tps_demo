@@ -7,9 +7,11 @@
 
 
 // Sets default values
-ADemoItem::ADemoItem():
+ADemoItem::ADemoItem() :
 	ItemName(FString("DefaultItemName")),
 	ItemState(EItemState::EItemState_Drop),
+	bFalling(false),
+	ItemFallingTime(1.f),
 	InteractAreaSphereRadius(150.f)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -56,6 +58,12 @@ void ADemoItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (GetItemState() == EItemState::EItemState_Falling && bFalling)
+	{
+		const FRotator MeshRotation{ 0.f, GetItemMesh()->GetComponentRotation().Yaw, 0.f };
+		GetItemMesh()->SetWorldRotation(MeshRotation, false, nullptr, ETeleportType::TeleportPhysics);
+	}
+
 }
 
 void ADemoItem::OnInteractAreaStartOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -82,6 +90,12 @@ void ADemoItem::OnInteractAreaeEndOverlap(UPrimitiveComponent* OverlappedCompone
 	}
 }
 
+void ADemoItem::SetItemState(EItemState State)
+{
+	ItemState = State;
+	SwitchItemProperty(State);
+}
+
 void ADemoItem::SwitchItemProperty(EItemState State)
 {
 	switch (State)
@@ -105,6 +119,7 @@ void ADemoItem::SwitchItemProperty(EItemState State)
 
 	case EItemState::EItemState_Falling:
 		UE_LOG(LogTemp, Log, TEXT("Weapon Falling"));
+		bFalling = true;
 		ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		ItemMesh->SetSimulatePhysics(true);
 		ItemMesh->SetEnableGravity(true);
@@ -139,10 +154,37 @@ void ADemoItem::SwitchItemProperty(EItemState State)
 	}
 }
 
-void ADemoItem::SetItemState(EItemState State)
+void ADemoItem::ItemStartFalling()
 {
-	ItemState = State;
-	SwitchItemProperty(State);
+	SetItemState(EItemState::EItemState_Falling);
+
+	FRotator MeshRotation{ 0.f, GetItemMesh()->GetComponentRotation().Yaw, 0.f };
+	GetItemMesh()->SetWorldRotation(MeshRotation, false, nullptr, ETeleportType::TeleportPhysics);
+
+	FVector MeshForward{ GetItemMesh()->GetForwardVector() };
+	FVector MeshRight{ GetItemMesh()->GetRightVector() };
+
+	// Direction throw weapon
+	FVector ImpluseDirection = MeshRight.RotateAngleAxis(-20.f, MeshForward);
+	float RandomRotation{ 30.f };
+	ImpluseDirection = ImpluseDirection.RotateAngleAxis(RandomRotation, FVector(0.f, 0.f, 1.f));
+	ImpluseDirection *= 2000.f;
+
+	GetItemMesh()->AddImpulse(ImpluseDirection);
+	GetWorldTimerManager().SetTimer(
+		ItemFallingTimer,
+		this,
+		&ADemoItem::ItemStopFalling,
+		ItemFallingTime);
 }
+
+void ADemoItem::ItemStopFalling()
+{
+	bFalling = true;
+
+	SetItemState(EItemState::EItemState_Drop);
+}
+
+
 
 
