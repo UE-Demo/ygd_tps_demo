@@ -158,19 +158,19 @@ void ADemoItem::ItemStartFalling()
 {
 	SetItemState(EItemState::EItemState_Falling);
 
-	FRotator MeshRotation{ 0.f, GetItemMesh()->GetComponentRotation().Yaw, 0.f };
-	GetItemMesh()->SetWorldRotation(MeshRotation, false, nullptr, ETeleportType::TeleportPhysics);
+	//FRotator MeshRotation{ 0.f, GetItemMesh()->GetComponentRotation().Yaw, 0.f };
+	//GetItemMesh()->SetWorldRotation(MeshRotation, false, nullptr, ETeleportType::TeleportPhysics);
 
-	FVector MeshForward{ GetItemMesh()->GetForwardVector() };
-	FVector MeshRight{ GetItemMesh()->GetRightVector() };
+	//FVector MeshForward{ GetItemMesh()->GetForwardVector() };
+	//FVector MeshRight{ GetItemMesh()->GetRightVector() };
 
-	// Direction throw weapon
-	FVector ImpluseDirection = MeshRight.RotateAngleAxis(-20.f, MeshForward);
-	float RandomRotation{ 30.f };
-	ImpluseDirection = ImpluseDirection.RotateAngleAxis(RandomRotation, FVector(0.f, 0.f, 1.f));
-	ImpluseDirection *= 2000.f;
+	//// Direction throw weapon
+	//FVector ImpluseDirection = MeshRight.RotateAngleAxis(-20.f, MeshForward);
+	//float RandomRotation{ 30.f };
+	//ImpluseDirection = ImpluseDirection.RotateAngleAxis(RandomRotation, FVector(0.f, 0.f, 1.f));
+	//ImpluseDirection *= 2000.f;
 
-	GetItemMesh()->AddImpulse(ImpluseDirection);
+	//GetItemMesh()->AddImpulse(ImpluseDirection);
 	GetWorldTimerManager().SetTimer(
 		ItemFallingTimer,
 		this,
