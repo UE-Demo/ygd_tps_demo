@@ -30,6 +30,11 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
+	/* Skeletal Mesh for the item. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Components", meta = (AllowPrivateAccess = "true"))
+		USkeletalMeshComponent* ItemMesh;
+
+private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	EFireMode WeaponFireMode;
 	
@@ -59,6 +64,8 @@ private:
 	void CompleteReloadAmmo(int32 ReloadAmmoAmount);
 
 public:
+	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const { return ItemMesh; }
+
 	FORCEINLINE EFireMode GetWeaponFireMode() const { return WeaponFireMode; }
 	void SetWeaponFireMode(EFireMode NewWeaponFireMode);
 
@@ -77,4 +84,11 @@ public:
 	void ReloadAmmo(int32 ReloadAmmoAmount);
 
 	void FireTimer();
+
+public:
+	virtual void ItemStartFalling() override;
+	virtual void ItemStopFalling() override;
+
+protected:
+	virtual void SwitchItemProperty(EItemState State);
 };
