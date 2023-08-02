@@ -12,10 +12,22 @@ ADemoWeapon::ADemoWeapon() :
 	bReloading(false),
 	WeaponFireMode(EFireMode::EFireMode_Auto)
 {
+	ItemMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ItemMesh"));
+	SetRootComponent(ItemMesh);
+	ItemMesh->SetSimulatePhysics(false);
+
+	CollisionBox->SetupAttachment(ItemMesh);
+	DropInfoWidget->SetupAttachment(GetRootComponent());
+	InteractAreaSphere->SetupAttachment(GetRootComponent());
 }
 
 void ADemoWeapon::Tick(float DeltaTime)
 {
+	if (GetItemState() == EItemState::EItemState_Falling && bFalling)
+	{
+		const FRotator MeshRotation{ 0.f, GetItemMesh()->GetComponentRotation().Yaw, 0.f };
+		GetItemMesh()->SetWorldRotation(MeshRotation, false, nullptr, ETeleportType::TeleportPhysics);
+	}
 }
 
 void ADemoWeapon::FireTimer()
@@ -48,14 +60,8 @@ void ADemoWeapon::SetWeaponFireMode(EFireMode NewWeaponFireMode)
 
 void ADemoWeapon::DecrementAmmoAmount(int32 DecrementAmount)
 {
-	if (AmmoAmount < DecrementAmount)
-	{
-		// do not decrement ammo amount
-	}
-	else
-	{
-		AmmoAmount -= DecrementAmount;
-	}
+	if (AmmoAmount < DecrementAmount) {}
+	else{ AmmoAmount -= DecrementAmount;}
 }
 
 void ADemoWeapon::ReloadAmmo(int32 ReloadAmmoAmount)
@@ -63,7 +69,6 @@ void ADemoWeapon::ReloadAmmo(int32 ReloadAmmoAmount)
 	bReloading = true;
 	
 	FTimerDelegate ReloadDelegate;
-	//ReloadDelegate.BindUFunction(this, FName(TEXT("CompleteReloadAmmo")), ReloadAmmoAmount);
 
 	ReloadDelegate = FTimerDelegate::CreateUObject(this, &ADemoWeapon::CompleteReloadAmmo, ReloadAmmoAmount);
 
@@ -75,4 +80,95 @@ void ADemoWeapon::CompleteReloadAmmo(int32 ReloadAmmoAmount)
 {
 	AmmoAmount = ReloadAmmoAmount;
 	bReloading = false;
+}
+
+void ADemoWeapon::SwitchItemProperty(EItemState State)
+{
+	switch (State)
+	{
+	case EItemState::EItemState_Drop:
+		ItemMesh->SetSimulatePhysics(false);
+		ItemMesh->SetEnableGravity(false);
+		ItemMesh->SetVisibility(true);
+		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		InteractAreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+		InteractAreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+
+		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		CollisionBox->SetCollisionResponseToChannel(
+			ECollisionChannel::ECC_Visibility,
+			ECollisionResponse::ECR_Block);
+		CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		break;
+
+	case EItemState::EItemState_Falling:
+		UE_LOG(LogTemp, Log, TEXT("Weapon Falling"));
+		bFalling = true;
+		ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		ItemMesh->SetSimulatePhysics(true);
+		ItemMesh->SetEnableGravity(true);
+		ItemMesh->SetVisibility(true);
+		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		ItemMesh->SetCollisionResponseToChannel(
+			ECollisionChannel::ECC_WorldStatic,
+			ECollisionResponse::ECR_Block);
+
+		InteractAreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		InteractAreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
+
+	case EItemState::EItemState_Equipped:
+		// DropInfoWidget->SetVisibility(false);
+		ItemMesh->SetSimulatePhysics(false);
+		ItemMesh->SetEnableGravity(false);
+		ItemMesh->SetVisibility(true);
+		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		InteractAreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		InteractAreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
+	}
+}
+
+void ADemoWeapon::ItemStartFalling()
+{
+
+	SetItemState(EItemState::EItemState_Falling);
+
+	//FRotator MeshRotation{ 0.f, GetItemMesh()->GetComponentRotation().Yaw, 0.f };
+	//GetItemMesh()->SetWorldRotation(MeshRotation, false, nullptr, ETeleportType::TeleportPhysics);
+
+	//FVector MeshForward{ GetItemMesh()->GetForwardVector() };
+	//FVector MeshRight{ GetItemMesh()->GetRightVector() };
+
+	//// Direction throw weapon
+	//FVector ImpluseDirection = MeshRight.RotateAngleAxis(-20.f, MeshForward);
+	//float RandomRotation{ 30.f };
+	//ImpluseDirection = ImpluseDirection.RotateAngleAxis(RandomRotation, FVector(0.f, 0.f, 1.f));
+	//ImpluseDirection *= 2000.f;
+
+	//GetItemMesh()->AddImpulse(ImpluseDirection);
+
+	GetWorldTimerManager().SetTimer(
+		ItemFallingTimer,
+		this,
+		&ADemoWeapon::ItemStopFalling,
+		ItemFallingTime);
+	
+}
+
+void ADemoWeapon::ItemStopFalling()
+{
+	bFalling = true;
+
+	SetItemState(EItemState::EItemState_Drop);
 }

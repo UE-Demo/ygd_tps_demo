@@ -50,13 +50,9 @@ public:
 
 #pragma endregion
 
-private:
+protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Components", meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* CollisionBox;
-
-	/* Skeleta Mesj for the item. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Components", meta = (AllowPrivateAccess = "true"))
-	USkeletalMeshComponent* ItemMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Components", meta = (AllowPrivateAccess = "true"))
 		class UWidgetComponent* DropInfoWidget;
@@ -85,22 +81,21 @@ protected:
 		int32 OtherBodyIndex
 	);
 
-	void SwitchItemProperty(EItemState State);
+	virtual void SwitchItemProperty(EItemState State);
 
 	bool bFalling;
 	FTimerHandle ItemFallingTimer;
 	float ItemFallingTime;
 public:
-	void ItemStartFalling();
-private:
-	void ItemStopFalling();
+	virtual void ItemStartFalling();
+	virtual void ItemStopFalling();
 
 public:
 	FORCEINLINE UWidgetComponent* GetDropInfoWidget() const { return DropInfoWidget; }
 	FORCEINLINE USphereComponent* GetInteractAreaSphere() const{ return InteractAreaSphere; }
 	FORCEINLINE UBoxComponent* GetCollisionBox() const { return CollisionBox; }
 	FORCEINLINE EItemState GetItemState() const { return ItemState; }
-	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const { return ItemMesh; }
+
 
 	void SetItemState(EItemState State);
 };
