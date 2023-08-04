@@ -31,9 +31,9 @@ ADemoCharacter::ADemoCharacter() :
 #pragma region init Camera
 	CameraSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraSpringArm"));
 	CameraSpringArm->SetupAttachment(RootComponent);
-	CameraSpringArm->TargetArmLength = 300.f;
+	CameraSpringArm->TargetArmLength = 180.f;
 	CameraSpringArm->bUsePawnControlRotation = true;
-	CameraSpringArm->SocketOffset = FVector(0.f, -150.f, 50.f);
+	CameraSpringArm->SocketOffset = FVector(0.f, -50.f, 50.f);
 
 	CharacterCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("CharacterCamera"));
 	CharacterCamera->SetupAttachment(CameraSpringArm, USpringArmComponent::SocketName);
@@ -67,17 +67,6 @@ void ADemoCharacter::Tick(float DeltaTime)
 	AimingZoomInterp(DeltaTime);
 
 	TraceForItems();
-	
-	/*switch (EquippedWeapon->GetItemState())
-	{
-	case EItemState::EItemState_Drop:
-		UE_LOG(LogTemp, Log, TEXT("Weapon State: Drop"));
-	case EItemState::EItemState_Falling:
-		UE_LOG(LogTemp, Log, TEXT("Weapon State: Falling"));
-	case EItemState::EItemState_Equipped:
-		UE_LOG(LogTemp, Log, TEXT("Weapon State: Equipped"));
-	}*/
-
 }
 
 // Called to bind functionality to input
@@ -143,16 +132,29 @@ void ADemoCharacter::CharacterInteract()
 	UE_LOG(LogTemp, Warning, TEXT("CharacterInteract"));
 	if (TraceHitItem)
 	{
-		auto TraceHitWeapon = Cast<ADemoWeapon>(TraceHitItem);
-		SwapWeapon(TraceHitWeapon);
+		if (auto TraceHitWeapon = Cast<ADemoWeapon>(TraceHitItem))
+		{
+			UE_LOG(LogTemp, Log, TEXT("Interact Weapon"));
+			SwapWeapon(TraceHitWeapon);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Interact Not Weapon"));
+		}
 	}
 }
 
 void ADemoCharacter::GetPickupItem(ADemoItem* Item)
 {
-	if (auto Weapon = Cast<ADemoWeapon>(Item))
+	UE_LOG(LogTemp, Warning, TEXT("Item Pickup"));
+	if (auto Weapon = CastChecked<ADemoWeapon>(Item))
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Item Weapon"));
 		SwapWeapon(Weapon);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Item Not Weapon"));
 	}
 }
 
@@ -162,7 +164,6 @@ void ADemoCharacter::EquipWeapon(ADemoWeapon* WeaponToEquip)
 
 	if (RightHandSocket)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("RightHandSocket"));
 		RightHandSocket->AttachActor(WeaponToEquip, GetMesh());
 	}
 
@@ -221,6 +222,8 @@ void ADemoCharacter::TraceForItems()
 		if (ItemTraceResult.bBlockingHit)
 		{
 			ADemoItem* HitItem = Cast<ADemoItem>(ItemTraceResult.GetActor());
+			UE_LOG(LogTemp, Log, TEXT("Name :%s"), *ItemTraceResult.GetActor()->GetFName().ToString());
+
 			if (HitItem && HitItem->GetDropInfoWidget())
 			{
 				HitItem->GetDropInfoWidget()->SetVisibility(true);

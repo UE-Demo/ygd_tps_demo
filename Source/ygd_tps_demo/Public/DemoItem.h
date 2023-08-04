@@ -34,8 +34,6 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -50,7 +48,7 @@ public:
 
 #pragma endregion
 
-protected:
+private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Components", meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* CollisionBox;
 
@@ -91,11 +89,10 @@ public:
 	virtual void ItemStopFalling();
 
 public:
-	FORCEINLINE UWidgetComponent* GetDropInfoWidget() const { return DropInfoWidget; }
-	FORCEINLINE USphereComponent* GetInteractAreaSphere() const{ return InteractAreaSphere; }
 	FORCEINLINE UBoxComponent* GetCollisionBox() const { return CollisionBox; }
+	FORCEINLINE USphereComponent* GetInteractAreaSphere() const { return InteractAreaSphere; }
+	FORCEINLINE UWidgetComponent* GetDropInfoWidget() const { return DropInfoWidget; }
+
 	FORCEINLINE EItemState GetItemState() const { return ItemState; }
-
-
 	void SetItemState(EItemState State);
 };

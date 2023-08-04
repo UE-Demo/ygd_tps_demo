@@ -16,9 +16,9 @@ ADemoWeapon::ADemoWeapon() :
 	SetRootComponent(ItemMesh);
 	ItemMesh->SetSimulatePhysics(false);
 
-	CollisionBox->SetupAttachment(ItemMesh);
-	DropInfoWidget->SetupAttachment(GetRootComponent());
-	InteractAreaSphere->SetupAttachment(GetRootComponent());
+	GetCollisionBox()->SetupAttachment(GetRootComponent());
+	GetDropInfoWidget()->SetupAttachment(GetRootComponent());
+	GetInteractAreaSphere()->SetupAttachment(GetRootComponent());
 }
 
 void ADemoWeapon::Tick(float DeltaTime)
@@ -93,14 +93,14 @@ void ADemoWeapon::SwitchItemProperty(EItemState State)
 		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-		InteractAreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
-		InteractAreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		GetInteractAreaSphere()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+		GetInteractAreaSphere()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
-		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-		CollisionBox->SetCollisionResponseToChannel(
+		GetCollisionBox()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		GetCollisionBox()->SetCollisionResponseToChannel(
 			ECollisionChannel::ECC_Visibility,
 			ECollisionResponse::ECR_Block);
-		CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		GetCollisionBox()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		break;
 
 	case EItemState::EItemState_Falling:
@@ -115,11 +115,11 @@ void ADemoWeapon::SwitchItemProperty(EItemState State)
 			ECollisionChannel::ECC_WorldStatic,
 			ECollisionResponse::ECR_Block);
 
-		InteractAreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-		InteractAreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		GetInteractAreaSphere()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		GetInteractAreaSphere()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		GetCollisionBox()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		GetCollisionBox()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		break;
 
 	case EItemState::EItemState_Equipped:
@@ -130,11 +130,11 @@ void ADemoWeapon::SwitchItemProperty(EItemState State)
 		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-		InteractAreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-		InteractAreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		GetInteractAreaSphere()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		GetInteractAreaSphere()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-		CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-		CollisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		GetCollisionBox()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		GetCollisionBox()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		break;
 	}
 }
