@@ -61,6 +61,7 @@ void ADemoItem::Tick(float DeltaTime)
 
 void ADemoItem::OnInteractAreaStartOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	UE_LOG(LogTemp, Log, TEXT("OnInteractAreaStartOverlap"));
 	if (OtherActor)
 	{
 		ADemoCharacter* DemoCharacter = Cast<ADemoCharacter>(OtherActor);
@@ -73,6 +74,7 @@ void ADemoItem::OnInteractAreaStartOverlap(UPrimitiveComponent* OverlappedCompon
 
 void ADemoItem::OnInteractAreaeEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	UE_LOG(LogTemp, Log, TEXT("OnInteractAreaeEndOverlap"));
 	if (OtherActor)
 	{
 		ADemoCharacter* DemoCharacter = Cast<ADemoCharacter>(OtherActor);
