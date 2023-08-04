@@ -7,6 +7,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "DemoItem.h"
 #include "DemoWeapon.h"
+#include "DemoAmmo.h"
 
 #include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
@@ -168,7 +169,7 @@ public:
 	/* Add/Substarct OverlappedItemCount and update bShouldTraceForItems. */
 	void IncrementOverlappedItemCount(int8 Amount);
 
-protected:
+public: // protected
 	/* Trace for itmes if OverlappedItemCount > 0. */
 	void TraceForItems();
 #pragma endregion
@@ -192,15 +193,17 @@ protected:
 	// Ammo Set up
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TMap<EAmmoType, int32> AmmoAmountMap;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	int32 Start9mmAmmoAmount;
+	int32 Ammo9mmAmount;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	int32 StartARAmmoAmount;
+	int32 AmmoARAmount;
 
 	void InitializeAmmoAmout();
 
 #pragma endregion
 
-
-
+	public:
+		FORCEINLINE int32 Get9mmAmmoAmount() const { return *AmmoAmountMap.Find(EAmmoType::EAmmoType_9mm); }
+		FORCEINLINE int32 GetAmmoARAmount() const { return *AmmoAmountMap.Find(EAmmoType::EAmmoType_AR); }
 };

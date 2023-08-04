@@ -22,8 +22,8 @@ ADemoCharacter::ADemoCharacter() :
 	bReloadingAmmo(false),
 
 	// StartingInventory
-	Start9mmAmmoAmount(50),
-	StartARAmmoAmount(30)
+	Ammo9mmAmount(50),
+	AmmoARAmount(30)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -67,6 +67,14 @@ void ADemoCharacter::Tick(float DeltaTime)
 	AimingZoomInterp(DeltaTime);
 
 	TraceForItems();
+
+	UE_LOG(LogTemp, Log, TEXT("Ammo Amout: 9mm : %d"), Get9mmAmmoAmount());
+	int num = 1;
+	for (const auto& Elem : AmmoAmountMap)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Ammo Type:%d, Ammo Amount:%d, Ammo Type Num:%d"), num, Elem.Value, AmmoAmountMap.Num());
+		num++;
+	}
 }
 
 // Called to bind functionality to input
@@ -106,6 +114,7 @@ void ADemoCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 void ADemoCharacter::PEIDebug(const FInputActionValue& value)
 {
 	UE_LOG(LogTemp, Warning, TEXT("PEIDebug"));
+	AmmoAmountMap.Add(EAmmoType::EAmmoType_9mm, *AmmoAmountMap.Find(EAmmoType::EAmmoType_9mm)+1);
 }
 
 void PEIDebugA(const FInputActionValue& value)
@@ -136,6 +145,10 @@ void ADemoCharacter::CharacterInteract()
 		{
 			UE_LOG(LogTemp, Log, TEXT("Interact Weapon"));
 			SwapWeapon(TraceHitWeapon);
+		}
+		else if(auto TraceHitAmmo = Cast<ADemoAmmo>(TraceHitItem))
+		{
+			UE_LOG(LogTemp, Log, TEXT("Interact Ammo"));
 		}
 		else
 		{
@@ -194,8 +207,8 @@ void ADemoCharacter::DropWeapon()
 
 void ADemoCharacter::InitializeAmmoAmout()
 {
-	AmmoAmountMap.Add(EAmmoType::EAmmoType_9mm, Start9mmAmmoAmount);
-	AmmoAmountMap.Add(EAmmoType::EAmmoType_AR, StartARAmmoAmount);
+	AmmoAmountMap.Add(EAmmoType::EAmmoType_9mm, Ammo9mmAmount);
+	AmmoAmountMap.Add(EAmmoType::EAmmoType_AR, AmmoARAmount);
 }
 
 void ADemoCharacter::IncrementOverlappedItemCount(int8 Amount)
@@ -222,7 +235,6 @@ void ADemoCharacter::TraceForItems()
 		if (ItemTraceResult.bBlockingHit)
 		{
 			ADemoItem* HitItem = Cast<ADemoItem>(ItemTraceResult.GetActor());
-			UE_LOG(LogTemp, Log, TEXT("Name :%s"), *ItemTraceResult.GetActor()->GetFName().ToString());
 
 			if (HitItem && HitItem->GetDropInfoWidget())
 			{
@@ -400,10 +412,30 @@ void ADemoCharacter::WeaponFire()
 
 void ADemoCharacter::ReloadAmmo()
 {
-	if (EquippedWeapon&&!EquippedWeapon->GetReloading())
+	EAmmoType WeaponAmmoType = EquippedWeapon->GetWeaponAmmoType();
+
+	if (EquippedWeapon->GetAmmoAmount()!= EquippedWeapon->GetBulletMaxAmmo() && 
+		AmmoAmountMap.Find(WeaponAmmoType) != 0)
+		// bullet not full and inventory ammo not empty
 	{
-		EquippedWeapon->ReloadAmmo(EquippedWeapon->GetBulletMaxAmmo());
+		if (EquippedWeapon->GetAmmoAmount() + *AmmoAmountMap.Find(WeaponAmmoType) >= EquippedWeapon->GetBulletMaxAmmo()) // can fill the whole weapon bullet
+		{
+			EquippedWeapon->ReloadAmmo(EquippedWeapon->GetBulletMaxAmmo());
+			// EquippedWeapon->SetAmmoAmount(EquippedWeapon->GetBulletMaxAmmo()); // fill the weapon bullet
+			AmmoAmountMap.Add(WeaponAmmoType, EquippedWeapon->GetBulletMaxAmmo() - EquippedWeapon->GetAmmoAmount()); // minus reload bullet in inventory
+		}
+		else // can not fill the entire weapon bullet
+		{
+			EquippedWeapon->ReloadAmmo(EquippedWeapon->GetAmmoAmount() + *AmmoAmountMap.Find(WeaponAmmoType));
+			// EquippedWeapon->SetAmmoAmount(EquippedWeapon->GetAmmoAmount() + *AmmoAmountMap.Find(WeaponAmmoType)); // fill the weapon bullet
+			AmmoAmountMap.Add(WeaponAmmoType,  0); // minus reload bullet in inventory		
+		}
 	}
+
+	//if (EquippedWeapon&&!EquippedWeapon->GetReloading())
+	//{
+	//	EquippedWeapon->ReloadAmmo(EquippedWeapon->GetBulletMaxAmmo());
+	//}
 
 }
 

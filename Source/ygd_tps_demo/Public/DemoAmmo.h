@@ -9,6 +9,13 @@
 /**
  * 
  */
+UENUM(BlueprintType)
+enum class EAmmoType :uint8
+{
+	EAmmoType_9mm UMETA(DisplayName = "9mm"),
+	EAmmoType_AR UMETA(DisplayName = "AR")
+};
+
 UCLASS()
 class YGD_TPS_DEMO_API ADemoAmmo : public ADemoItem
 {

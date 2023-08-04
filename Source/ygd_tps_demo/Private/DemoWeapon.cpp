@@ -66,13 +66,17 @@ void ADemoWeapon::DecrementAmmoAmount(int32 DecrementAmount)
 
 void ADemoWeapon::ReloadAmmo(int32 ReloadAmmoAmount)
 {
-	bReloading = true;
+	if (ReloadAmmoAmount != 0)
+	{
+		bReloading = true;
+
+		FTimerDelegate ReloadDelegate;
+
+		ReloadDelegate = FTimerDelegate::CreateUObject(this, &ADemoWeapon::CompleteReloadAmmo, ReloadAmmoAmount);
+
+		GetWorldTimerManager().SetTimer(ReloadTimerHandle, ReloadDelegate, ReloadTime, false);
+	}
 	
-	FTimerDelegate ReloadDelegate;
-
-	ReloadDelegate = FTimerDelegate::CreateUObject(this, &ADemoWeapon::CompleteReloadAmmo, ReloadAmmoAmount);
-
-	GetWorldTimerManager().SetTimer(ReloadTimerHandle, ReloadDelegate, ReloadTime, false);
 
 }
 

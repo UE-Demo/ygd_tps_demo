@@ -4,14 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "DemoItem.h"
+#include "DemoAmmo.h"
 #include "DemoWeapon.generated.h"
 
-UENUM(BlueprintType)
-enum class EAmmoType :uint8
-{
-	EAmmoType_9mm UMETA(DisplayName = "9mm"),
-	EAmmoType_AR UMETA(DisplayName = "AR")
-};
+
 
 UENUM(BlueprintType)
 enum class EFireMode :uint8
@@ -34,10 +30,13 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Components", meta = (AllowPrivateAccess = "true"))
 		USkeletalMeshComponent* ItemMesh;
 
-private:
+protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	EFireMode WeaponFireMode;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	EAmmoType WeaponAmmoType;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	/* Interval between two fires in auto fire mode. */
 	float AutoFireInterval;
@@ -75,7 +74,9 @@ public:
 	UFUNCTION()
 	FORCEINLINE bool GetReloading() const { return bReloading; }
 
+	FORCEINLINE EAmmoType GetWeaponAmmoType() const { return WeaponAmmoType; }
 	FORCEINLINE int32 GetAmmoAmount() const { return AmmoAmount; }
+	FORCEINLINE void SetAmmoAmount(const int32 ReloadAmmo) { AmmoAmount = ReloadAmmo;}
 	FORCEINLINE int32 GetBulletMaxAmmo() const { return BulletMaxAmmo; }
 	FORCEINLINE float GetReloadingAmmoTime() const { return ReloadTime; }
 
