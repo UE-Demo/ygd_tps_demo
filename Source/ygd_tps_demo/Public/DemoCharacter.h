@@ -184,11 +184,12 @@ public: // protected
 	ADemoWeapon* SpawnDefaultWeapon();
 
 	void CharacterInteract();
-	void GetPickupItem(ADemoItem* Item);
 
 	void EquipWeapon(ADemoWeapon* WeaponToEquip);
 	void SwapWeapon(ADemoWeapon* WeaponToSwap);
 	void DropWeapon();
+
+	void PickUpAmmo(class ADemoAmmo* Ammo);
 
 	// Ammo Set up
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))

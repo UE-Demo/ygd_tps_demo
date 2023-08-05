@@ -141,25 +141,12 @@ void ADemoCharacter::CharacterInteract()
 		else if(auto TraceHitAmmo = Cast<ADemoAmmo>(TraceHitItem))
 		{
 			UE_LOG(LogTemp, Log, TEXT("Interact Ammo"));
+			PickUpAmmo(TraceHitAmmo);
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Interact Not Weapon"));
+			UE_LOG(LogTemp, Warning, TEXT("Interact Unknown Actor"));
 		}
-	}
-}
-
-void ADemoCharacter::GetPickupItem(ADemoItem* Item)
-{
-	UE_LOG(LogTemp, Warning, TEXT("Item Pickup"));
-	if (auto Weapon = CastChecked<ADemoWeapon>(Item))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Item Weapon"));
-		SwapWeapon(Weapon);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Item Not Weapon"));
 	}
 }
 
@@ -196,6 +183,14 @@ void ADemoCharacter::DropWeapon()
 		EquippedWeapon = nullptr;
 	}
 }
+
+void ADemoCharacter::PickUpAmmo(ADemoAmmo* PickAmmo)
+{
+	SetAmount(PickAmmo->GetAmmoType(), PickAmmo->GetAmmoAmount() + GetAmmoAmount(PickAmmo->GetAmmoType()));
+	PickAmmo->Destroy();
+}
+
+
 
 void ADemoCharacter::InitializeAmmoAmout()
 {
@@ -387,8 +382,6 @@ void ADemoCharacter::WeaponFire()
 		}
 
 	}
-
-	
 }
 
 void ADemoCharacter::ReloadAmmo()
