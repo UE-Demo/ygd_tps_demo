@@ -204,6 +204,6 @@ public: // protected
 #pragma endregion
 
 	public:
-		FORCEINLINE int32 Get9mmAmmoAmount() const { return *AmmoAmountMap.Find(EAmmoType::EAmmoType_9mm); }
-		FORCEINLINE int32 GetAmmoARAmount() const { return *AmmoAmountMap.Find(EAmmoType::EAmmoType_AR); }
+		FORCEINLINE int32 GetAmmoAmount(EAmmoType AmmoType) const { return *AmmoAmountMap.Find(AmmoType); }
+		FORCEINLINE void SetAmount(EAmmoType AmmoType, int32 NewAmmoAmount) { AmmoAmountMap.Add(AmmoType, NewAmmoAmount); }
 };

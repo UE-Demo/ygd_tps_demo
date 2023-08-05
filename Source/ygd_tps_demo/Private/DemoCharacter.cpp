@@ -67,14 +67,6 @@ void ADemoCharacter::Tick(float DeltaTime)
 	AimingZoomInterp(DeltaTime);
 
 	TraceForItems();
-
-	UE_LOG(LogTemp, Log, TEXT("Ammo Amout: 9mm : %d"), Get9mmAmmoAmount());
-	int num = 1;
-	for (const auto& Elem : AmmoAmountMap)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Ammo Type:%d, Ammo Amount:%d, Ammo Type Num:%d"), num, Elem.Value, AmmoAmountMap.Num());
-		num++;
-	}
 }
 
 // Called to bind functionality to input
@@ -396,8 +388,6 @@ void ADemoCharacter::WeaponFire()
 			if (EquippedWeapon)
 			{
 				EquippedWeapon->DecrementAmmoAmount(1);
-				UE_LOG(LogTemp, Log, TEXT("Ammo: %d"), EquippedWeapon->GetAmmoAmount());
-				UE_LOG(LogTemp, Log, TEXT("Ammo Empty: %s"), CheckWeaponAmmoEmpty() ? TEXT("true") : TEXT("false"));
 			}
 		}
 		else
@@ -414,29 +404,34 @@ void ADemoCharacter::ReloadAmmo()
 {
 	EAmmoType WeaponAmmoType = EquippedWeapon->GetWeaponAmmoType();
 
+	UE_LOG(LogTemp, Log, TEXT("AmmoAmountMap Empty: %s"), AmmoAmountMap.Find(WeaponAmmoType) != 0 ? TEXT("T") : TEXT("F"));
+
 	if (EquippedWeapon->GetAmmoAmount()!= EquippedWeapon->GetBulletMaxAmmo() && 
 		AmmoAmountMap.Find(WeaponAmmoType) != 0)
 		// bullet not full and inventory ammo not empty
 	{
-		if (EquippedWeapon->GetAmmoAmount() + *AmmoAmountMap.Find(WeaponAmmoType) >= EquippedWeapon->GetBulletMaxAmmo()) // can fill the whole weapon bullet
+		if (EquippedWeapon->GetAmmoAmount() + GetAmmoAmount(WeaponAmmoType) >= EquippedWeapon->GetBulletMaxAmmo()) // can fill the whole weapon bullet
 		{
+			UE_LOG(LogTemp, Warning, TEXT("Type1"));
 			EquippedWeapon->ReloadAmmo(EquippedWeapon->GetBulletMaxAmmo());
 			// EquippedWeapon->SetAmmoAmount(EquippedWeapon->GetBulletMaxAmmo()); // fill the weapon bullet
 			AmmoAmountMap.Add(WeaponAmmoType, EquippedWeapon->GetBulletMaxAmmo() - EquippedWeapon->GetAmmoAmount()); // minus reload bullet in inventory
 		}
 		else // can not fill the entire weapon bullet
 		{
+			UE_LOG(LogTemp, Warning, TEXT("Type2"));
 			EquippedWeapon->ReloadAmmo(EquippedWeapon->GetAmmoAmount() + *AmmoAmountMap.Find(WeaponAmmoType));
 			// EquippedWeapon->SetAmmoAmount(EquippedWeapon->GetAmmoAmount() + *AmmoAmountMap.Find(WeaponAmmoType)); // fill the weapon bullet
 			AmmoAmountMap.Add(WeaponAmmoType,  0); // minus reload bullet in inventory		
 		}
 	}
 
-	//if (EquippedWeapon&&!EquippedWeapon->GetReloading())
+	//int num = 1;
+	//for (const auto& Elem : AmmoAmountMap)
 	//{
-	//	EquippedWeapon->ReloadAmmo(EquippedWeapon->GetBulletMaxAmmo());
+	//	UE_LOG(LogTemp, Log, TEXT("Ammo Type:%d, Ammo Amount:%d, Ammo Type Num:%d"), num, Elem.Value);
+	//	num++;
 	//}
-
 }
 
 bool ADemoCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& BeamEndLocation)
