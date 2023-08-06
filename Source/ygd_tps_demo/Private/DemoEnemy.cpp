@@ -15,6 +15,9 @@ ADemoEnemy::ADemoEnemy()
 void ADemoEnemy::BeginPlay()
 {
 	Super::BeginPlay();
+
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+
 	
 }
 
@@ -30,5 +33,9 @@ void ADemoEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void ADemoEnemy::BulletHit_Implementation(FHitResult HitResult)
+{
 }
 
