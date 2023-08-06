@@ -37,5 +37,22 @@ void ADemoEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 
 void ADemoEnemy::BulletHit_Implementation(FHitResult HitResult)
 {
+	if (BulletHitImpactParticles)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BulletHitImpactParticles, HitResult.Location, FRotator(0.f), true);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Enemy BulletHitImpactParticles lost."))
+	}
+
+	if (BulletHitSounds)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, BulletHitSounds, GetActorLocation());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Enemy BulletHitSounds lost."))
+	}
 }
 

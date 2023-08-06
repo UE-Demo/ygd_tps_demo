@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "DemoBulletHitInterface.h"
+#include "Kismet/GameplayStatics.h"
 
 // Assets
 #include "Particles/ParticleSystemComponent.h"
@@ -26,10 +27,10 @@ protected:
 	virtual void BeginPlay() override;
 
 #pragma region Assets
-	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class UParticleSystem* BulletHitImpactParticles;
 
-	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class USoundCue* BulletHitSounds;
 #pragma endregion
 
