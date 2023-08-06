@@ -123,7 +123,7 @@ public:
 
 	/* Return HitResult from crosshair. */
 	bool GetBeamEndLocation(
-		const FVector& MuzzleSocketLocation, FVector& BeamEndLocation);
+		const FVector& MuzzleSocketLocation, FHitResult& BeamHitResult);
 
 	/* Line trace for items under the crosshair. */
 	bool TraceUnderCrosshairs(

@@ -327,18 +327,17 @@ void ADemoCharacter::WeaponFire()
 		{
 			const FTransform BarrelSocketTransform = BarrelSocket->GetSocketTransform(EquippedWeapon->GetItemMesh());
 
-			FVector BeamEndLocation;
-
+			FHitResult BeamEndHitResult;
 			// 在命中点生成命中特效
 			if (GetBeamEndLocation(
-				BarrelSocketTransform.GetLocation(), BeamEndLocation)) // 判定命中同时获取命中信息
+				BarrelSocketTransform.GetLocation(), BeamEndHitResult)) // 判定命中同时获取命中信息
 			{
 				if (ImpactParticles)
 				{
 					UGameplayStatics::SpawnEmitterAtLocation(
 						GetWorld(),
 						ImpactParticles,
-						BeamEndLocation);
+						BeamEndHitResult.Location);
 				}
 			}
 
@@ -351,7 +350,7 @@ void ADemoCharacter::WeaponFire()
 					BarrelSocketTransform);
 				if (Beam)
 				{
-					Beam->SetVectorParameter(FName("Target"), BeamEndLocation);
+					Beam->SetVectorParameter(FName("Target"), BeamEndHitResult.Location);
 				}
 			}
 
@@ -410,10 +409,11 @@ void ADemoCharacter::ReloadAmmo()
 
 }
 
-bool ADemoCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& BeamEndLocation)
+bool ADemoCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FHitResult &BeamHitResult)
 {
 	// Check for crosshair trace hit
 	FHitResult CrosshairHitResult;
+	FVector BeamEndLocation;
 	bool bCrosshairHit = TraceUnderCrosshairs(CrosshairHitResult, BeamEndLocation);
 
 	if (bCrosshairHit)
@@ -427,22 +427,24 @@ bool ADemoCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVe
 	}
 
 	// Perform a second trace, this time from the gun barrel
-	FHitResult WeaponTraceHit;
+
 	const FVector WeaponTraceStart{ MuzzleSocketLocation };
 	const FVector StartToEnd{ BeamEndLocation - WeaponTraceStart };
 	const FVector WeaponTraceEnd{ MuzzleSocketLocation + StartToEnd * 1.25f };
 	GetWorld()->LineTraceSingleByChannel(
-		WeaponTraceHit,
+		BeamHitResult,
 		WeaponTraceStart,
 		WeaponTraceEnd,
 		ECollisionChannel::ECC_Visibility);
-	if (WeaponTraceHit.bBlockingHit) // object between barrel and BeamEndPoint?
+
+	if (BeamHitResult.bBlockingHit) // object between barrel and BeamEndPoint?
 	{
-		BeamEndLocation = WeaponTraceHit.Location;
+		// BeamEndLocation = BeamHitResult.Location;
 		return true;
 	}
 	else
 	{
+		BeamHitResult.Location = WeaponTraceEnd;
 		return false;
 	}
 
