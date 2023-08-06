@@ -321,7 +321,7 @@ void ADemoCharacter::WeaponFire()
 
 	if (EquippedWeapon->GetCanFire() && !EquippedWeapon->GetReloading())
 	{
-		EquippedWeapon->FireTimer();
+		EquippedWeapon->FireTimer(); // EquippedWeapon->GetCanFire() will return false before timer
 
 		if (BarrelSocket)
 		{
@@ -332,16 +332,30 @@ void ADemoCharacter::WeaponFire()
 			if (GetBeamEndLocation(
 				BarrelSocketTransform.GetLocation(), BeamEndHitResult)) // 判定命中同时获取命中信息
 			{
-				if (ImpactParticles)
+				// hit actor or not
+				if (BeamEndHitResult.GetActor()->IsValidLowLevel())
 				{
-					UGameplayStatics::SpawnEmitterAtLocation(
-						GetWorld(),
-						ImpactParticles,
-						BeamEndHitResult.Location);
+					// if hit result implement DemoBulletHitInterface
+					if (IDemoBulletHitInterface* BulletHitInterface = Cast<IDemoBulletHitInterface>(BeamEndHitResult.GetActor()))
+					{
+						BulletHitInterface->BulletHit_Implementation(BeamEndHitResult);
+					}
 				}
+				// hit nothing
+				else
+				{
+					if (ImpactParticles)
+					{
+						UGameplayStatics::SpawnEmitterAtLocation(
+							GetWorld(),
+							ImpactParticles,
+							BeamEndHitResult.Location);
+					}
+					else { UE_LOG(LogTemp, Warning, TEXT("ImpactParticles Lost.")); }
+				}	
 			}
 
-			// 弹道特效
+			// Ballistic effects
 			if (BeamParticles)
 			{
 				UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
@@ -354,13 +368,13 @@ void ADemoCharacter::WeaponFire()
 				}
 			}
 
-			// 枪声
+			// Gun shot sounds
 			if (GunShotSounds)
 			{
 				UGameplayStatics::PlaySound2D(this, GunShotSounds);
 			}
 
-			// 射击动画蒙太奇
+			// Gun Anim Montage
 			AnimInstance = GetMesh()->GetAnimInstance();
 			if (AnimInstance && HipFireMontage)
 			{
@@ -369,7 +383,7 @@ void ADemoCharacter::WeaponFire()
 				AnimInstance->Montage_JumpToSection(FName("StartFire"));
 			}
 
-			// 弹药消耗
+			// Consume Ammo in weapon bullet
 			if (EquippedWeapon)
 			{
 				EquippedWeapon->DecrementAmmoAmount(1);
@@ -439,15 +453,13 @@ bool ADemoCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FHi
 
 	if (BeamHitResult.bBlockingHit) // object between barrel and BeamEndPoint?
 	{
-		// BeamEndLocation = BeamHitResult.Location;
 		return true;
 	}
-	else
+	else // not hit anything
 	{
-		BeamHitResult.Location = WeaponTraceEnd;
+		BeamHitResult.Location = WeaponTraceEnd; // beam end is the straight line begin from weapon MuzzleSocketLocation
 		return false;
 	}
-
 }
 
 bool ADemoCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& OutHitLocation)
