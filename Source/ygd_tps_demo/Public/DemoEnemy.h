@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "DemoBulletHitInterface.h"
+#include "Kismet/GameplayStatics.h"
 
 // Assets
 #include "Particles/ParticleSystemComponent.h"
@@ -26,11 +27,21 @@ protected:
 	virtual void BeginPlay() override;
 
 #pragma region Assets
-	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = HitAssets, meta = (AllowPrivateAccess = "true"))
 		class UParticleSystem* BulletHitImpactParticles;
 
-	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = HitAssets, meta = (AllowPrivateAccess = "true"))
 		class USoundCue* BulletHitSounds;
+#pragma endregion
+
+#pragma region EnemyStatus
+
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = EnemyStatus, meta = (AllowPrivateAccess = "true"))
+		float EnemyHealth;
+
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = EnemyStatus, meta = (AllowPrivateAccess = "true"))
+		float EnemyMaxHealth;
+
 #pragma endregion
 
 
@@ -42,4 +53,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual void BulletHit_Implementation(FHitResult HitResult) override;
+
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvenet, AController* EvenInstigator, AActor* DamageCauser) override;
+
 };

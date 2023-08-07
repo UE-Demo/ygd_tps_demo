@@ -321,28 +321,48 @@ void ADemoCharacter::WeaponFire()
 
 	if (EquippedWeapon->GetCanFire() && !EquippedWeapon->GetReloading())
 	{
-		EquippedWeapon->FireTimer();
+		EquippedWeapon->FireTimer(); // EquippedWeapon->GetCanFire() will return false before timer
 
 		if (BarrelSocket)
 		{
 			const FTransform BarrelSocketTransform = BarrelSocket->GetSocketTransform(EquippedWeapon->GetItemMesh());
 
-			FVector BeamEndLocation;
-
+			FHitResult BeamEndHitResult;
 			// 在命中点生成命中特效
 			if (GetBeamEndLocation(
-				BarrelSocketTransform.GetLocation(), BeamEndLocation)) // 判定命中同时获取命中信息
+				BarrelSocketTransform.GetLocation(), BeamEndHitResult)) // 判定命中同时获取命中信息
 			{
-				if (ImpactParticles)
+				// hit actor or not
+				if (BeamEndHitResult.GetActor()->IsValidLowLevel())
 				{
-					UGameplayStatics::SpawnEmitterAtLocation(
-						GetWorld(),
-						ImpactParticles,
-						BeamEndLocation);
+					// if hit result implement DemoBulletHitInterface
+					AActor* BeamHItActor= BeamEndHitResult.GetActor();
+					if (IDemoBulletHitInterface* BulletHitInterface = Cast<IDemoBulletHitInterface>(BeamHItActor))
+					{
+						BulletHitInterface->BulletHit_Implementation(BeamEndHitResult);
+					}
+					
+					// if hit enemy apply damage to enemy
+					if (ADemoEnemy* HitEnemy = Cast<ADemoEnemy>(BeamHItActor))
+					{
+						UGameplayStatics::ApplyDamage(BeamHItActor, EquippedWeapon->GetWeaponDamage(), GetController(), this, UDamageType::StaticClass());
+					}
 				}
+				// hit nothing
+				else
+				{
+					if (ImpactParticles)
+					{
+						UGameplayStatics::SpawnEmitterAtLocation(
+							GetWorld(),
+							ImpactParticles,
+							BeamEndHitResult.Location);
+					}
+					else { UE_LOG(LogTemp, Warning, TEXT("ImpactParticles Lost.")); }
+				}	
 			}
 
-			// 弹道特效
+			// Ballistic effects
 			if (BeamParticles)
 			{
 				UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
@@ -351,17 +371,17 @@ void ADemoCharacter::WeaponFire()
 					BarrelSocketTransform);
 				if (Beam)
 				{
-					Beam->SetVectorParameter(FName("Target"), BeamEndLocation);
+					Beam->SetVectorParameter(FName("Target"), BeamEndHitResult.Location);
 				}
 			}
 
-			// 枪声
+			// Gun shot sounds
 			if (GunShotSounds)
 			{
 				UGameplayStatics::PlaySound2D(this, GunShotSounds);
 			}
 
-			// 射击动画蒙太奇
+			// Gun Anim Montage
 			AnimInstance = GetMesh()->GetAnimInstance();
 			if (AnimInstance && HipFireMontage)
 			{
@@ -370,7 +390,7 @@ void ADemoCharacter::WeaponFire()
 				AnimInstance->Montage_JumpToSection(FName("StartFire"));
 			}
 
-			// 弹药消耗
+			// Consume Ammo in weapon bullet
 			if (EquippedWeapon)
 			{
 				EquippedWeapon->DecrementAmmoAmount(1);
@@ -410,10 +430,11 @@ void ADemoCharacter::ReloadAmmo()
 
 }
 
-bool ADemoCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& BeamEndLocation)
+bool ADemoCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FHitResult &BeamHitResult)
 {
 	// Check for crosshair trace hit
 	FHitResult CrosshairHitResult;
+	FVector BeamEndLocation;
 	bool bCrosshairHit = TraceUnderCrosshairs(CrosshairHitResult, BeamEndLocation);
 
 	if (bCrosshairHit)
@@ -427,25 +448,25 @@ bool ADemoCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVe
 	}
 
 	// Perform a second trace, this time from the gun barrel
-	FHitResult WeaponTraceHit;
+
 	const FVector WeaponTraceStart{ MuzzleSocketLocation };
 	const FVector StartToEnd{ BeamEndLocation - WeaponTraceStart };
 	const FVector WeaponTraceEnd{ MuzzleSocketLocation + StartToEnd * 1.25f };
 	GetWorld()->LineTraceSingleByChannel(
-		WeaponTraceHit,
+		BeamHitResult,
 		WeaponTraceStart,
 		WeaponTraceEnd,
 		ECollisionChannel::ECC_Visibility);
-	if (WeaponTraceHit.bBlockingHit) // object between barrel and BeamEndPoint?
+
+	if (BeamHitResult.bBlockingHit) // object between barrel and BeamEndPoint?
 	{
-		BeamEndLocation = WeaponTraceHit.Location;
 		return true;
 	}
-	else
+	else // not hit anything
 	{
+		BeamHitResult.Location = WeaponTraceEnd; // beam end is the straight line begin from weapon MuzzleSocketLocation
 		return false;
 	}
-
 }
 
 bool ADemoCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& OutHitLocation)

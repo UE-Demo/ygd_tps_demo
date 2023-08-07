@@ -4,6 +4,7 @@
 #include "DemoWeapon.h"
 
 ADemoWeapon::ADemoWeapon() :
+	WeaponDamage(10.f),
 	AmmoAmount(0),
 	BulletMaxAmmo(0),
 	ReloadTime(1.f),
