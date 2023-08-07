@@ -31,6 +31,9 @@ private:
 		USkeletalMeshComponent* ItemMesh;
 
 protected:
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = EnemyStatus, meta = (AllowPrivateAccess = "true"))
+		float WeaponDamage;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	EFireMode WeaponFireMode;
 	
@@ -65,13 +68,13 @@ protected:
 public:
 	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const { return ItemMesh; }
 
+	FORCEINLINE float GetWeaponDamage() const { return WeaponDamage; }
 	FORCEINLINE EFireMode GetWeaponFireMode() const { return WeaponFireMode; }
 	void SetWeaponFireMode(EFireMode NewWeaponFireMode);
 
 	FORCEINLINE bool GetCanFire() const { return bCanFire; }
 	FORCEINLINE float GetAutoFireInterval() const { return AutoFireInterval; }
 
-	UFUNCTION()
 	FORCEINLINE bool GetReloading() const { return bReloading; }
 
 	FORCEINLINE EAmmoType GetWeaponAmmoType() const { return WeaponAmmoType; }

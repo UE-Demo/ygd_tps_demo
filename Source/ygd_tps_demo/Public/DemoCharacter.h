@@ -9,6 +9,7 @@
 #include "DemoWeapon.h"
 #include "DemoAmmo.h"
 #include "DemoBulletHitInterface.h"
+#include "DemoEnemy.h"
 
 #include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"

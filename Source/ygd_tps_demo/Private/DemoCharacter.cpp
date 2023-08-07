@@ -336,9 +336,16 @@ void ADemoCharacter::WeaponFire()
 				if (BeamEndHitResult.GetActor()->IsValidLowLevel())
 				{
 					// if hit result implement DemoBulletHitInterface
-					if (IDemoBulletHitInterface* BulletHitInterface = Cast<IDemoBulletHitInterface>(BeamEndHitResult.GetActor()))
+					AActor* BeamHItActor= BeamEndHitResult.GetActor();
+					if (IDemoBulletHitInterface* BulletHitInterface = Cast<IDemoBulletHitInterface>(BeamHItActor))
 					{
 						BulletHitInterface->BulletHit_Implementation(BeamEndHitResult);
+					}
+					
+					// if hit enemy apply damage to enemy
+					if (ADemoEnemy* HitEnemy = Cast<ADemoEnemy>(BeamHItActor))
+					{
+						UGameplayStatics::ApplyDamage(BeamHItActor, EquippedWeapon->GetWeaponDamage(), GetController(), this, UDamageType::StaticClass());
 					}
 				}
 				// hit nothing
