@@ -6,7 +6,9 @@
 // Sets default values
 ADemoEnemy::ADemoEnemy():
 	EnemyHealth(100.f),
-	EnemyMaxHealth(100.f)
+	EnemyMaxHealth(100.f),
+
+	InfoWidgetDisplayTime(4.f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -21,6 +23,12 @@ void ADemoEnemy::BeginPlay()
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 
 	
+}
+
+void ADemoEnemy::ShowInfoWidget_Implementation()
+{
+	GetWorldTimerManager().ClearTimer(InfoWidgetTimer);
+	GetWorldTimerManager().SetTimer(InfoWidgetTimer, this, &ADemoEnemy::HideInfoWidget , InfoWidgetDisplayTime);
 }
 
 // Called every frame
@@ -58,6 +66,8 @@ void ADemoEnemy::BulletHit_Implementation(FHitResult HitResult)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Enemy BulletHitSounds lost."))
 	}
+
+	ShowInfoWidget();
 }
 
 float ADemoEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvenet, AController* EvenInstigator, AActor* DamageCauser)

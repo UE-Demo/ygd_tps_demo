@@ -22,6 +22,16 @@ public:
 	// Sets default values for this character's properties
 	ADemoEnemy();
 
+#pragma region EnemyStatus
+
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = EnemyStatus, meta = (AllowPrivateAccess = "true"))
+		float EnemyHealth;
+
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = EnemyStatus, meta = (AllowPrivateAccess = "true"))
+		float EnemyMaxHealth;
+
+#pragma endregion
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -34,13 +44,24 @@ protected:
 		class USoundCue* BulletHitSounds;
 #pragma endregion
 
-#pragma region EnemyStatus
 
-	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = EnemyStatus, meta = (AllowPrivateAccess = "true"))
-		float EnemyHealth;
 
-	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = EnemyStatus, meta = (AllowPrivateAccess = "true"))
-		float EnemyMaxHealth;
+#pragma region InfoWidget
+protected:
+
+	bool bShowInfoWidget;
+
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = InfoWidget, meta = (AllowPrivateAccess = "true"))
+	float InfoWidgetDisplayTime;
+
+	FTimerHandle InfoWidgetTimer;
+
+	UFUNCTION(BlueprintNativeEvent)
+	void ShowInfoWidget();
+	void ShowInfoWidget_Implementation();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void HideInfoWidget();
 
 #pragma endregion
 
@@ -56,4 +77,6 @@ public:
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvenet, AController* EvenInstigator, AActor* DamageCauser) override;
 
+	FORCEINLINE bool IsShowInfoWidget() const { return bShowInfoWidget; }
+	FORCEINLINE void SetShowInfoWidget(bool ShouldShowInfoWidget) {  bShowInfoWidget = ShouldShowInfoWidget; }
 };
