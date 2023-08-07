@@ -30,6 +30,8 @@ public:
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = EnemyStatus, meta = (AllowPrivateAccess = "true"))
 		float EnemyMaxHealth;
 
+	void EnemyDie();
+
 #pragma endregion
 
 protected:
@@ -43,8 +45,6 @@ protected:
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = HitAssets, meta = (AllowPrivateAccess = "true"))
 		class USoundCue* BulletHitSounds;
 #pragma endregion
-
-
 
 #pragma region InfoWidget
 protected:

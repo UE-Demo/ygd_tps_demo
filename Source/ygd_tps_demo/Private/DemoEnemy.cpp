@@ -75,6 +75,7 @@ float ADemoEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvene
 	if (EnemyHealth - DamageAmount <= 0.f)
 	{
 		EnemyHealth = 0.f;
+		EnemyDie();
 	}
 	else
 	{
@@ -84,3 +85,7 @@ float ADemoEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvene
 	return DamageAmount;
 }
 
+void ADemoEnemy::EnemyDie()
+{
+	HideInfoWidget();
+}
