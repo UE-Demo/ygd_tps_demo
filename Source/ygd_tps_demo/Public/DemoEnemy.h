@@ -65,6 +65,14 @@ protected:
 
 #pragma endregion
 
+#pragma region Anim
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = InfoWidget, meta = (AllowPrivateAccess = "true"))
+		UAnimMontage* EnemyHitMontage;
+
+	void PlayEnemyHitMontage(FName MontageSection, float PlayRate = 1.f);
+
+#pragma endregion
+
 
 public:	
 	// Called every frame
@@ -76,6 +84,9 @@ public:
 	virtual void BulletHit_Implementation(FHitResult HitResult) override;
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvenet, AController* EvenInstigator, AActor* DamageCauser) override;
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE float GetHealthPercent() const { return EnemyHealth / EnemyMaxHealth; }
 
 	FORCEINLINE bool IsShowInfoWidget() const { return bShowInfoWidget; }
 	FORCEINLINE void SetShowInfoWidget(bool ShouldShowInfoWidget) {  bShowInfoWidget = ShouldShowInfoWidget; }

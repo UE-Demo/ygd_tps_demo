@@ -31,6 +31,15 @@ void ADemoEnemy::ShowInfoWidget_Implementation()
 	GetWorldTimerManager().SetTimer(InfoWidgetTimer, this, &ADemoEnemy::HideInfoWidget , InfoWidgetDisplayTime);
 }
 
+void ADemoEnemy::PlayEnemyHitMontage(FName MontageSection, float PlayRate)
+{
+	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+	{
+		AnimInstance->Montage_Play(EnemyHitMontage, PlayRate);
+		AnimInstance->Montage_JumpToSection(MontageSection, EnemyHitMontage);
+	}
+}
+
 // Called every frame
 void ADemoEnemy::Tick(float DeltaTime)
 {
@@ -68,6 +77,8 @@ void ADemoEnemy::BulletHit_Implementation(FHitResult HitResult)
 	}
 
 	ShowInfoWidget();
+
+	PlayEnemyHitMontage(FName("HitReact_1"));
 }
 
 float ADemoEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvenet, AController* EvenInstigator, AActor* DamageCauser)
