@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "DemoBulletHitInterface.h"
 
+
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -87,6 +88,9 @@ protected:
 
 #pragma region EnemyAI
 protected:
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = AIBehavior, meta = (AllowPrivateAccess = "true"))
+		class ADemoEnemyAIController* EnemyController;
+
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = AIBehavior, meta = (AllowPrivateAccess = "true"))
 		class UBehaviorTree* EnemyBehaviorTree;
 public:

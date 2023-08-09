@@ -2,6 +2,7 @@
 
 
 #include "DemoEnemy.h"
+#include "DemoEnemyAIController.h"
 #include "DrawDebugHelpers.h"
 
 // Sets default values
@@ -27,8 +28,16 @@ void ADemoEnemy::BeginPlay()
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 
 	FVector WorldPatrolPoint = UKismetMathLibrary::TransformLocation(GetActorTransform(), EnemyPatrolPoint);
-
 	DrawDebugSphere(GetWorld(), WorldPatrolPoint, 25.f, 12, FColor::Red, true);
+
+	EnemyController = Cast<ADemoEnemyAIController>(GetController());
+	if (EnemyController)
+	{
+		EnemyController->GetBlackboardComponent()->SetValueAsVector(TEXT("PatrolPoint"), WorldPatrolPoint);
+
+		EnemyController->RunBehaviorTree(EnemyBehaviorTree);
+	}
+
 }
 
 // Called every frame
