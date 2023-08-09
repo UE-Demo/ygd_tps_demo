@@ -8,7 +8,10 @@ ADemoEnemy::ADemoEnemy():
 	EnemyHealth(100.f),
 	EnemyMaxHealth(100.f),
 
-	InfoWidgetDisplayTime(4.f)
+	InfoWidgetDisplayTime(4.f),
+
+	bCanHitReact(true),
+	HitReactTime(0.3f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -25,21 +28,6 @@ void ADemoEnemy::BeginPlay()
 	
 }
 
-void ADemoEnemy::ShowInfoWidget_Implementation()
-{
-	GetWorldTimerManager().ClearTimer(InfoWidgetTimer);
-	GetWorldTimerManager().SetTimer(InfoWidgetTimer, this, &ADemoEnemy::HideInfoWidget , InfoWidgetDisplayTime);
-}
-
-void ADemoEnemy::PlayEnemyHitMontage(FName MontageSection, float PlayRate)
-{
-	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
-	{
-		AnimInstance->Montage_Play(EnemyHitMontage, PlayRate);
-		AnimInstance->Montage_JumpToSection(MontageSection, EnemyHitMontage);
-	}
-}
-
 // Called every frame
 void ADemoEnemy::Tick(float DeltaTime)
 {
@@ -49,11 +37,31 @@ void ADemoEnemy::Tick(float DeltaTime)
 
 }
 
-// Called to bind functionality to input
-void ADemoEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void ADemoEnemy::ShowInfoWidget_Implementation()
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	GetWorldTimerManager().ClearTimer(InfoWidgetTimer);
+	GetWorldTimerManager().SetTimer(InfoWidgetTimer, this, &ADemoEnemy::HideInfoWidget, InfoWidgetDisplayTime);
+}
 
+void ADemoEnemy::PlayEnemyHitMontage(FName MontageSection, float PlayRate)
+{
+	if (bCanHitReact)
+	{
+		if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+		{
+			AnimInstance->Montage_Play(EnemyHitMontage, PlayRate);
+			AnimInstance->Montage_JumpToSection(MontageSection, EnemyHitMontage);
+
+			bCanHitReact = false;
+
+			GetWorldTimerManager().SetTimer(EnemyHitReactTimer, this, &ADemoEnemy::ResetEnemyHitReactTimer, HitReactTime);
+		}
+	}
+}
+
+void ADemoEnemy::ResetEnemyHitReactTimer()
+{
+	bCanHitReact = true;
 }
 
 void ADemoEnemy::BulletHit_Implementation(FHitResult HitResult)
@@ -80,6 +88,8 @@ void ADemoEnemy::BulletHit_Implementation(FHitResult HitResult)
 
 	PlayEnemyHitMontage(FName("HitReact_1"));
 }
+
+
 
 float ADemoEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvenet, AController* EvenInstigator, AActor* DamageCauser)
 {

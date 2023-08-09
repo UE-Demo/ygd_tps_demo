@@ -66,20 +66,25 @@ protected:
 #pragma endregion
 
 #pragma region Anim
-	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = InfoWidget, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = HitReact, meta = (AllowPrivateAccess = "true"))
 		UAnimMontage* EnemyHitMontage;
 
 	void PlayEnemyHitMontage(FName MontageSection, float PlayRate = 1.f);
 
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = HitReact, meta = (AllowPrivateAccess = "true"))
+	bool bCanHitReact;
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = HitReact, meta = (AllowPrivateAccess = "true"))
+	float HitReactTime;
+
+	FTimerHandle EnemyHitReactTimer;
+
+	void ResetEnemyHitReactTimer();
 #pragma endregion
 
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual void BulletHit_Implementation(FHitResult HitResult) override;
 
