@@ -5,7 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "DemoBulletHitInterface.h"
+
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Assets
 #include "Particles/ParticleSystemComponent.h"
@@ -85,10 +87,16 @@ protected:
 
 #pragma region EnemyAI
 protected:
-	UPROPERTY(BlueprintReadWrite, Category = AIBehavior)
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = AIBehavior, meta = (AllowPrivateAccess = "true"))
 		class UBehaviorTree* EnemyBehaviorTree;
 public:
 	FORCEINLINE UBehaviorTree* GetEnemyBehaviorTree() const { return EnemyBehaviorTree; }
+
+protected:
+
+	/* Point for enemy to move to. */
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = AIBehavior, meta = (AllowPrivateAccess = "true", MakeEditWidget = "true"))
+	FVector EnemyPatrolPoint;
 #pragma endregion
 
 

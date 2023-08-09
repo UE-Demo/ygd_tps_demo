@@ -2,6 +2,7 @@
 
 
 #include "DemoEnemy.h"
+#include "DrawDebugHelpers.h"
 
 // Sets default values
 ADemoEnemy::ADemoEnemy():
@@ -25,7 +26,9 @@ void ADemoEnemy::BeginPlay()
 
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 
-	
+	FVector WorldPatrolPoint = UKismetMathLibrary::TransformLocation(GetActorTransform(), EnemyPatrolPoint);
+
+	DrawDebugSphere(GetWorld(), WorldPatrolPoint, 25.f, 12, FColor::Red, true);
 }
 
 // Called every frame
