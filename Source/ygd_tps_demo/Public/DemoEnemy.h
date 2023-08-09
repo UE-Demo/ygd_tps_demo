@@ -11,6 +11,8 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
 
+#include "BehaviorTree/BehaviorTree.h"
+
 #include "DemoEnemy.generated.h"
 
 UCLASS()
@@ -79,6 +81,14 @@ protected:
 	FTimerHandle EnemyHitReactTimer;
 
 	void ResetEnemyHitReactTimer();
+#pragma endregion
+
+#pragma region EnemyAI
+protected:
+	UPROPERTY(BlueprintReadWrite, Category = AIBehavior)
+		class UBehaviorTree* EnemyBehaviorTree;
+public:
+	FORCEINLINE UBehaviorTree* GetEnemyBehaviorTree() const { return EnemyBehaviorTree; }
 #pragma endregion
 
 
