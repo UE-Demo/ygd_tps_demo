@@ -31,16 +31,27 @@ void ADemoEnemy::BeginPlay()
 	Super::BeginPlay();
 
 	HostileSphere->OnComponentBeginOverlap.AddDynamic(this, &ADemoEnemy::HostileSphereOverlap);
+	HostileSphere->OnComponentEndOverlap.AddDynamic(this, &ADemoEnemy::HostileSphereEndOverlap);
 
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 
 	FVector WorldPatrolPoint = UKismetMathLibrary::TransformLocation(GetActorTransform(), EnemyPatrolPoint);
+
+	const FVector WorldPatrolPoint2 = UKismetMathLibrary::TransformLocation(
+		GetActorTransform(),
+		EnemyPatrolPoint2);
+
 	DrawDebugSphere(GetWorld(), WorldPatrolPoint, 25.f, 12, FColor::Red, true);
+	DrawDebugSphere(GetWorld(), WorldPatrolPoint2, 25.f, 12, FColor::Red, true);
 
 	EnemyController = Cast<ADemoEnemyAIController>(GetController());
 	if (EnemyController)
 	{
 		EnemyController->GetBlackboardComponent()->SetValueAsVector(TEXT("PatrolPoint"), WorldPatrolPoint);
+
+		EnemyController->GetBlackboardComponent()->SetValueAsVector(
+			TEXT("PatrolPoint2"),
+			WorldPatrolPoint2);
 
 		EnemyController->RunBehaviorTree(EnemyBehaviorTree);
 	}
@@ -57,6 +68,23 @@ void ADemoEnemy::HostileSphereOverlap(UPrimitiveComponent* OverlappedComponent, 
 		EnemyController->GetBlackboardComponent()->SetValueAsObject(
 			TEXT("TargetActor"),
 			Character);
+
+		UE_LOG(LogTemp, Log, TEXT("HostileSphereOverlap"));
+	}
+}
+
+void ADemoEnemy::HostileSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherActor == nullptr) return;
+
+	auto Character = Cast<ADemoCharacter>(OtherActor);
+	if (Character)
+	{
+		EnemyController->GetBlackboardComponent()->SetValueAsObject(
+			TEXT("TargetActor"),
+			nullptr);
+
+		UE_LOG(LogTemp, Log, TEXT("HostileSphereEndOverlap"));
 	}
 }
 
