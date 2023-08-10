@@ -93,6 +93,9 @@ protected:
 
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = AIBehavior, meta = (AllowPrivateAccess = "true"))
 		class UBehaviorTree* EnemyBehaviorTree;
+
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = AIBehavior, meta = (AllowPrivateAccess = "true"))
+	class USphereComponent* HostileSphere;
 public:
 	FORCEINLINE UBehaviorTree* GetEnemyBehaviorTree() const { return EnemyBehaviorTree; }
 

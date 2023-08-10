@@ -5,6 +5,9 @@
 #include "DemoEnemyAIController.h"
 #include "DrawDebugHelpers.h"
 
+#include "Components/SphereComponent.h"
+#include "Components/PrimitiveComponent.h"
+
 // Sets default values
 ADemoEnemy::ADemoEnemy():
 	EnemyHealth(100.f),
@@ -18,6 +21,8 @@ ADemoEnemy::ADemoEnemy():
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	HostileSphere = CreateDefaultSubobject<USphereComponent>(TEXT("HostileSphere"));
+	HostileSphere->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
