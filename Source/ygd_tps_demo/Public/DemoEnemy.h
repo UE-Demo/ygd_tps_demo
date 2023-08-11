@@ -115,7 +115,7 @@ protected:
 		FVector EnemyPatrolPoint2;
 #pragma endregion
 
-#pragma region Hit
+#pragma region GetHit
 protected:
 
 	bool bIsStunned;
@@ -133,6 +133,27 @@ public:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvenet, AController* EvenInstigator, AActor* DamageCauser) override;
 
 #pragma endregion
+
+#pragma region EnemyCombat
+
+protected:
+
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = EnemyCombat, meta = (AllowPrivateAccess = "true"))
+	class ADemoWeapon* EnemyEquippedWeapon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = EnemyCombat, meta = (AllowPrivateAccess = "true"))
+		TSubclassOf<ADemoWeapon> EnemyDefaultWeaponClass;
+
+	ADemoWeapon* SpawnEnemyDefaultWeapon();
+
+	void EnemyEquipWeapon(ADemoWeapon* WeaponToEquip);
+
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = EnemyCombat, meta = (AllowPrivateAccess = "true"))
+	AActor* TargetActor;
+	void EnemyWeaponFire();
+
+#pragma endregion
+
 
 public:	
 	// Called every frame

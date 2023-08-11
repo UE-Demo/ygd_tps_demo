@@ -64,6 +64,8 @@ void ADemoCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	DrawDebugSphere(GetWorld(), GetActorLocation(), 25.f, 12, FColor::Red, false);
+
 	AimingZoomInterp(DeltaTime);
 
 	TraceForItems();

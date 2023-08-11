@@ -5,6 +5,7 @@
 #include "DemoEnemyAIController.h"
 #include "DrawDebugHelpers.h"
 #include "DemoCharacter.h"
+#include "DemoWeapon.h"
 #include "Components/SphereComponent.h"
 #include "Components/PrimitiveComponent.h"
 
@@ -19,7 +20,7 @@ ADemoEnemy::ADemoEnemy():
 	HitReactTime(0.3f),
 
 	bIsStunned(false),
-	StunTime(1.0f)
+	StunTime(3.0f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -59,6 +60,7 @@ void ADemoEnemy::BeginPlay()
 		EnemyController->RunBehaviorTree(EnemyBehaviorTree);
 	}
 
+	EnemyEquipWeapon(SpawnEnemyDefaultWeapon());
 }
 
 void ADemoEnemy::HostileSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -68,6 +70,7 @@ void ADemoEnemy::HostileSphereOverlap(UPrimitiveComponent* OverlappedComponent, 
 	auto Character = Cast<ADemoCharacter>(OtherActor);
 	if (Character)
 	{
+		TargetActor = Cast<AActor>(OtherActor);
 		EnemyController->GetBlackboardComponent()->SetValueAsObject(
 			TEXT("TargetActor"),
 			Character);
@@ -81,9 +84,72 @@ void ADemoEnemy::HostileSphereEndOverlap(UPrimitiveComponent* OverlappedComponen
 	auto Character = Cast<ADemoCharacter>(OtherActor);
 	if (Character)
 	{
+		TargetActor = nullptr;
 		EnemyController->GetBlackboardComponent()->SetValueAsObject(
 			TEXT("TargetActor"),
 			nullptr);
+	}
+}
+
+ADemoWeapon* ADemoEnemy::SpawnEnemyDefaultWeapon()
+{
+	if (EnemyDefaultWeaponClass)
+	{
+		return GetWorld()->SpawnActor<ADemoWeapon>(EnemyDefaultWeaponClass);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Enemy Not DefaultWeaponClass"));
+		return nullptr;
+	}
+}
+
+void ADemoEnemy::EnemyEquipWeapon(ADemoWeapon* WeaponToEquip)
+{
+	const USkeletalMeshSocket* RightHandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
+
+	if (RightHandSocket)
+	{
+		RightHandSocket->AttachActor(WeaponToEquip, GetMesh());
+	}
+
+	EnemyEquippedWeapon = WeaponToEquip;
+	EnemyEquippedWeapon->SetItemState(EItemState::EItemState_Equipped);
+}
+
+void ADemoEnemy::EnemyWeaponFire()
+{
+	if (TargetActor == nullptr) return;
+
+	const FVector Start =  GetActorLocation();
+	const FVector Direction{ (TargetActor->GetActorLocation() - Start).GetSafeNormal()};
+	const FVector End{ Start + Direction*300000.f };
+
+	UE_LOG(LogTemp, Log, TEXT("Start Detect"));
+	FHitResult EnemyHitResult;
+	GetWorld()->LineTraceSingleByChannel(
+		EnemyHitResult,
+		Start,
+		End,
+		ECollisionChannel::ECC_Visibility);
+
+	DrawDebugLine(GetWorld(), Start, End, FColor::Red);
+	
+	ADemoCharacter* TargetPlayer;
+	if (EnemyHitResult.bBlockingHit)
+	{
+		UE_LOG(LogTemp, Log, TEXT("bBlockingHit"));
+
+		TargetPlayer = Cast<ADemoCharacter>(EnemyHitResult.GetActor());
+
+		if (TargetPlayer)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Not Block"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Log, TEXT("Block"));
+		}
 	}
 }
 
@@ -91,6 +157,15 @@ void ADemoEnemy::HostileSphereEndOverlap(UPrimitiveComponent* OverlappedComponen
 void ADemoEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	EnemyWeaponFire();
+	DrawDebugSphere(GetWorld(), GetActorLocation(), 25.f, 12, FColor::Red, false);
+
+	if (TargetActor)
+	{
+		FVector TargetLocation = TargetActor->GetActorLocation();
+		FRotator NewRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TargetLocation);
+		SetActorRotation(NewRotation);
+	}
 }
 
 void ADemoEnemy::ShowInfoWidget_Implementation()
