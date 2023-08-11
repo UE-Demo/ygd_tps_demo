@@ -328,12 +328,11 @@ void ADemoCharacter::WeaponFire()
 		if (BarrelSocket)
 		{
 			const FTransform BarrelSocketTransform = BarrelSocket->GetSocketTransform(EquippedWeapon->GetItemMesh());
-
 			FHitResult BeamEndHitResult;
 			// 在命中点生成命中特效
 			if (GetBeamEndLocation(
 				BarrelSocketTransform.GetLocation(), BeamEndHitResult)) // 判定命中同时获取命中信息
-			{
+			{			
 				// hit actor or not
 				if (BeamEndHitResult.GetActor()->IsValidLowLevel())
 				{
@@ -343,6 +342,18 @@ void ADemoCharacter::WeaponFire()
 					{
 						BulletHitInterface->BulletHit_Implementation(BeamEndHitResult);
 					}
+					// if hit result do not implement DemoBulletHitInterface
+					else
+					{
+						if (EquippedWeapon->GetWeaponImpactParticles())
+						{
+							UGameplayStatics::SpawnEmitterAtLocation(
+								GetWorld(),
+								EquippedWeapon->GetWeaponImpactParticles(),
+								BeamEndHitResult.Location);
+						}
+						else { UE_LOG(LogTemp, Warning, TEXT("ImpactParticles Lost.")); }
+					}
 					
 					// if hit enemy apply damage to enemy
 					if (ADemoEnemy* HitEnemy = Cast<ADemoEnemy>(BeamHItActor))
@@ -350,26 +361,14 @@ void ADemoCharacter::WeaponFire()
 						UGameplayStatics::ApplyDamage(BeamHItActor, EquippedWeapon->GetWeaponDamage(), GetController(), this, UDamageType::StaticClass());
 					}
 				}
-				// hit nothing
-				else
-				{
-					if (ImpactParticles)
-					{
-						UGameplayStatics::SpawnEmitterAtLocation(
-							GetWorld(),
-							ImpactParticles,
-							BeamEndHitResult.Location);
-					}
-					else { UE_LOG(LogTemp, Warning, TEXT("ImpactParticles Lost.")); }
-				}	
 			}
 
 			// Ballistic effects
-			if (BeamParticles)
+			if (EquippedWeapon->GetWeaponBeamParticles())
 			{
 				UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
 					GetWorld(),
-					BeamParticles,
+					EquippedWeapon->GetWeaponBeamParticles(),
 					BarrelSocketTransform);
 				if (Beam)
 				{
@@ -378,9 +377,9 @@ void ADemoCharacter::WeaponFire()
 			}
 
 			// Gun shot sounds
-			if (GunShotSounds)
+			if (EquippedWeapon->GetWeaponSounds())
 			{
-				UGameplayStatics::PlaySound2D(this, GunShotSounds);
+				UGameplayStatics::PlaySound2D(this, EquippedWeapon->GetWeaponSounds());
 			}
 
 			// Gun Anim Montage

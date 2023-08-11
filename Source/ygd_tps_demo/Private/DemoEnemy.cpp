@@ -125,7 +125,6 @@ void ADemoEnemy::EnemyWeaponFire()
 	const FVector Direction{ (TargetActor->GetActorLocation() - Start).GetSafeNormal()};
 	const FVector End{ Start + Direction*300000.f };
 
-	UE_LOG(LogTemp, Log, TEXT("Start Detect"));
 	FHitResult EnemyHitResult;
 	GetWorld()->LineTraceSingleByChannel(
 		EnemyHitResult,
@@ -138,17 +137,16 @@ void ADemoEnemy::EnemyWeaponFire()
 	ADemoCharacter* TargetPlayer;
 	if (EnemyHitResult.bBlockingHit)
 	{
-		UE_LOG(LogTemp, Log, TEXT("bBlockingHit"));
 
 		TargetPlayer = Cast<ADemoCharacter>(EnemyHitResult.GetActor());
 
 		if (TargetPlayer)
 		{
-			UE_LOG(LogTemp, Log, TEXT("Not Block"));
+			
 		}
 		else
 		{
-			UE_LOG(LogTemp, Log, TEXT("Block"));
+			
 		}
 	}
 }

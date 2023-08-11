@@ -26,9 +26,36 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
+#pragma region Asset
 	/* Skeletal Mesh for the item. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Components", meta = (AllowPrivateAccess = "true"))
 		USkeletalMeshComponent* ItemMesh;
+
+	/* Particles spawned upon bullet impact */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Assets, meta = (AllowPrivateAccess = "true"))
+		UParticleSystem* WeaponImpactParticles;
+
+	/* Smoke trail for bullets */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Assets, meta = (AllowPrivateAccess = "true"))
+		UParticleSystem* WeaponBeamParticles;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Assets, meta = (AllowPrivateAccess = "true"))
+		class USoundCue* WeaponSounds;
+
+public:
+	FORCEINLINE UParticleSystem* GetWeaponImpactParticles() const
+	{
+		return WeaponImpactParticles;
+	}
+	FORCEINLINE UParticleSystem* GetWeaponBeamParticles() const
+	{
+		return WeaponBeamParticles;
+	}
+	FORCEINLINE USoundCue* GetWeaponSounds() const
+	{
+		return WeaponSounds;
+	}
+#pragma endregion
 
 protected:
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = EnemyStatus, meta = (AllowPrivateAccess = "true"))

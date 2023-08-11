@@ -102,19 +102,6 @@ public:
 	class UAnimInstance* AnimInstance;
 #pragma endregion
 
-#pragma region Asset
-	/* Particles spawned upon bullet impact */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Assets, meta = (AllowPrivateAccess = "true"))
-		UParticleSystem* ImpactParticles;
-
-	/* Smoke trail for bullets */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Assets, meta = (AllowPrivateAccess = "true"))
-		UParticleSystem* BeamParticles;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Assets, meta = (AllowPrivateAccess = "true"))
-	class USoundCue* GunShotSounds;
-#pragma endregion
-
 #pragma region Combat
 
 	bool CheckWeaponAmmoEmpty();
