@@ -16,7 +16,10 @@ ADemoEnemy::ADemoEnemy():
 	InfoWidgetDisplayTime(4.f),
 
 	bCanHitReact(true),
-	HitReactTime(0.3f)
+	HitReactTime(0.3f),
+
+	bIsStunned(false),
+	StunTime(1.0f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -68,8 +71,6 @@ void ADemoEnemy::HostileSphereOverlap(UPrimitiveComponent* OverlappedComponent, 
 		EnemyController->GetBlackboardComponent()->SetValueAsObject(
 			TEXT("TargetActor"),
 			Character);
-
-		UE_LOG(LogTemp, Log, TEXT("HostileSphereOverlap"));
 	}
 }
 
@@ -83,8 +84,6 @@ void ADemoEnemy::HostileSphereEndOverlap(UPrimitiveComponent* OverlappedComponen
 		EnemyController->GetBlackboardComponent()->SetValueAsObject(
 			TEXT("TargetActor"),
 			nullptr);
-
-		UE_LOG(LogTemp, Log, TEXT("HostileSphereEndOverlap"));
 	}
 }
 
@@ -121,6 +120,20 @@ void ADemoEnemy::ResetEnemyHitReactTimer()
 	bCanHitReact = true;
 }
 
+void ADemoEnemy::SetStunned()
+{
+	bIsStunned = true;
+	EnemyController->GetBlackboardComponent()->SetValueAsBool(FName("Stuned"), true);
+
+	GetWorldTimerManager().SetTimer(EnemyStunTimer, this, &ADemoEnemy::ResetStunned, StunTime);
+}
+
+void ADemoEnemy::ResetStunned()
+{
+	bIsStunned = false;
+	EnemyController->GetBlackboardComponent()->SetValueAsBool(FName("Stuned"), false);
+}
+
 void ADemoEnemy::BulletHit_Implementation(FHitResult HitResult)
 {
 	if (BulletHitImpactParticles)
@@ -144,6 +157,8 @@ void ADemoEnemy::BulletHit_Implementation(FHitResult HitResult)
 	ShowInfoWidget();
 
 	PlayEnemyHitMontage(FName("HitReact_1"));
+
+	SetStunned();
 }
 
 

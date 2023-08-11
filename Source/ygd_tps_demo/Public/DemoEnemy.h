@@ -115,14 +115,28 @@ protected:
 		FVector EnemyPatrolPoint2;
 #pragma endregion
 
+#pragma region Hit
+protected:
+
+	bool bIsStunned;
+	float StunTime;
+
+	FTimerHandle EnemyStunTimer;
+
+	void SetStunned();
+	void ResetStunned();
+
+public:
+
+	FORCEINLINE bool IsStunned() const { return bIsStunned; }
+	virtual void BulletHit_Implementation(FHitResult HitResult) override;
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvenet, AController* EvenInstigator, AActor* DamageCauser) override;
+
+#pragma endregion
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	virtual void BulletHit_Implementation(FHitResult HitResult) override;
-
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvenet, AController* EvenInstigator, AActor* DamageCauser) override;
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE float GetHealthPercent() const { return EnemyHealth / EnemyMaxHealth; }
