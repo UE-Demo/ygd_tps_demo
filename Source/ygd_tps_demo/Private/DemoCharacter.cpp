@@ -336,6 +336,7 @@ void ADemoCharacter::WeaponFire()
 				// hit actor or not
 				if (BeamEndHitResult.GetActor()->IsValidLowLevel())
 				{
+					DrawDebugSphere(GetWorld(), BeamEndHitResult.Location, 10.f, 12, FColor::Blue, true);
 					// if hit result implement DemoBulletHitInterface
 					AActor* BeamHItActor= BeamEndHitResult.GetActor();
 					if (IDemoBulletHitInterface* BulletHitInterface = Cast<IDemoBulletHitInterface>(BeamHItActor))

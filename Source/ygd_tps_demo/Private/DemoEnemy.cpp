@@ -20,7 +20,7 @@ ADemoEnemy::ADemoEnemy():
 	HitReactTime(0.3f),
 
 	bIsStunned(false),
-	StunTime(3.0f)
+	StunTime(1.5f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -45,7 +45,6 @@ void ADemoEnemy::BeginPlay()
 		GetActorTransform(),
 		EnemyPatrolPoint2);
 
-	DrawDebugSphere(GetWorld(), WorldPatrolPoint, 25.f, 12, FColor::Red, true);
 	DrawDebugSphere(GetWorld(), WorldPatrolPoint2, 25.f, 12, FColor::Red, true);
 
 	EnemyController = Cast<ADemoEnemyAIController>(GetController());
@@ -120,10 +119,18 @@ void ADemoEnemy::EnemyEquipWeapon(ADemoWeapon* WeaponToEquip)
 void ADemoEnemy::EnemyWeaponFire()
 {
 	if (TargetActor == nullptr) return;
+	if (EnemyEquippedWeapon->GetAmmoAmount() <= 0) return ;
 
-	const FVector Start =  GetActorLocation();
+	EnemyEquippedWeapon->FireTimer();
+
+	const USkeletalMeshSocket* BarrelSocket =
+		EnemyEquippedWeapon->GetItemMesh()->GetSocketByName("BarrelSocket");
+	const FTransform BarrelSocketTransform = BarrelSocket->GetSocketTransform(EnemyEquippedWeapon->GetItemMesh());
+
+	const FVector Start = BarrelSocketTransform.GetLocation();
 	const FVector Direction{ (TargetActor->GetActorLocation() - Start).GetSafeNormal()};
-	const FVector End{ Start + Direction*300000.f };
+	const FVector End{ Start + Direction*3000.f };
+	const FVector EndIfNotHit{ Start + Direction * 3000.f };
 
 	FHitResult EnemyHitResult;
 	GetWorld()->LineTraceSingleByChannel(
@@ -133,21 +140,49 @@ void ADemoEnemy::EnemyWeaponFire()
 		ECollisionChannel::ECC_Visibility);
 
 	DrawDebugLine(GetWorld(), Start, End, FColor::Red);
-	
-	ADemoCharacter* TargetPlayer;
+
+	// ADemoCharacter* TargetPlayer;
 	if (EnemyHitResult.bBlockingHit)
 	{
-
-		TargetPlayer = Cast<ADemoCharacter>(EnemyHitResult.GetActor());
-
-		if (TargetPlayer)
+		UE_LOG(LogTemp, Warning, TEXT("EnemyHitResult.bBlockingHit"));
+		AActor* BlockingActor = EnemyHitResult.GetActor();
+		if (BlockingActor)
 		{
-			
+			DrawDebugSphere(GetWorld(), EnemyHitResult.Location, 10.f, 12, FColor::Blue, true);
+			UE_LOG(LogTemp, Warning, TEXT("BlockingActor : %s"), *BlockingActor->GetName());
+			UE_LOG(LogTemp, Warning, TEXT("BlockingActor Location : %s"), *BlockingActor->GetActorLocation().ToString());
+			if (ADemoCharacter* HitEnemy = Cast<ADemoCharacter>(BlockingActor))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("HitEnemy"));
+				//UGameplayStatics::ApplyDamage(BlockingActor, EnemyEquippedWeapon->GetWeaponDamage(), GetController(), this, UDamageType::StaticClass());
+			}
 		}
-		else
+	}
+
+	// Ballistic effects if not hit
+	if (EnemyEquippedWeapon->GetWeaponBeamParticles())
+	{
+		UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			EnemyEquippedWeapon->GetWeaponBeamParticles(),
+			BarrelSocketTransform);
+
+		if (Beam)
 		{
-			
+			Beam->SetVectorParameter(FName("Target"), EndIfNotHit);
 		}
+	}
+
+	// Gun shot sounds
+	if (EnemyEquippedWeapon->GetWeaponSounds())
+	{
+		UGameplayStatics::PlaySound2D(this, EnemyEquippedWeapon->GetWeaponSounds());
+	}
+
+	// Consume Ammo in weapon bullet
+	if (EnemyEquippedWeapon)
+	{
+		EnemyEquippedWeapon->DecrementAmmoAmount(1);
 	}
 }
 
@@ -155,14 +190,20 @@ void ADemoEnemy::EnemyWeaponFire()
 void ADemoEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	EnemyWeaponFire();
+
 	DrawDebugSphere(GetWorld(), GetActorLocation(), 25.f, 12, FColor::Red, false);
 
+	// Face to TargetActor
 	if (TargetActor)
 	{
 		FVector TargetLocation = TargetActor->GetActorLocation();
 		FRotator NewRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TargetLocation);
 		SetActorRotation(NewRotation);
+	}
+
+	if (!bIsStunned && !EnemyEquippedWeapon->GetReloading() && EnemyEquippedWeapon->GetCanFire())
+	{
+		EnemyWeaponFire();
 	}
 }
 
@@ -196,15 +237,21 @@ void ADemoEnemy::ResetEnemyHitReactTimer()
 void ADemoEnemy::SetStunned()
 {
 	bIsStunned = true;
-	EnemyController->GetBlackboardComponent()->SetValueAsBool(FName("Stuned"), true);
-
+	if (EnemyController)
+	{
+		EnemyController->GetBlackboardComponent()->SetValueAsBool(FName("Stuned"), true);
+	}
 	GetWorldTimerManager().SetTimer(EnemyStunTimer, this, &ADemoEnemy::ResetStunned, StunTime);
 }
 
 void ADemoEnemy::ResetStunned()
 {
 	bIsStunned = false;
-	EnemyController->GetBlackboardComponent()->SetValueAsBool(FName("Stuned"), false);
+	if (EnemyController)
+	{
+		EnemyController->GetBlackboardComponent()->SetValueAsBool(FName("Stuned"), false);
+	}
+	
 }
 
 void ADemoEnemy::BulletHit_Implementation(FHitResult HitResult)
