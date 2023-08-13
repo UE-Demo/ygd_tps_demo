@@ -6,6 +6,9 @@
 
 // Sets default values
 ADemoCharacter::ADemoCharacter() :
+	Health(100.f),
+	MaxHealth(100.f),
+
 	// Aim
 	bAiming(false),
 	CameraAimingZoomFOV(60.f),
@@ -111,6 +114,8 @@ void ADemoCharacter::PEIDebug(const FInputActionValue& value)
 {
 	UE_LOG(LogTemp, Warning, TEXT("PEIDebug"));
 	AmmoAmountMap.Add(EAmmoType::EAmmoType_9mm, *AmmoAmountMap.Find(EAmmoType::EAmmoType_9mm)+1);
+	Health -= 1.f;
+	UE_LOG(LogTemp, Warning, TEXT("PEIDebug: %f"), GetHealthPercent());
 }
 
 void PEIDebugA(const FInputActionValue& value)

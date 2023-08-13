@@ -103,10 +103,14 @@ public:
 #pragma endregion
 
 #pragma region PlayerStatus
+protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 		float Health;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 		float MaxHealth;
+public:
+	UFUNCTION(BlueprintCallable)
+		FORCEINLINE float GetHealthPercent() const { return Health / MaxHealth; }
 #pragma endregion
 
 #pragma region PlayerGetHit
@@ -140,7 +144,7 @@ protected:
 	float CameraAimingZoomFOV;
 	/* Use for Aiming Interpolation FOV. */
 	float CameraTempFOV;
-	float AimingFOVZoomInterpSpeed;
+	float AimingFOVZoomInterpSpeed;																
 
 	float LookSensitivity;
 
