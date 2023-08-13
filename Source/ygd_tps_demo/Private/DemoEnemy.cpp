@@ -153,25 +153,34 @@ void ADemoEnemy::EnemyWeaponFire()
 			UE_LOG(LogTemp, Warning, TEXT("BlockingActor Location : %s"), *BlockingActor->GetActorLocation().ToString());
 			if (ADemoCharacter* HitEnemy = Cast<ADemoCharacter>(BlockingActor))
 			{
-				UE_LOG(LogTemp, Warning, TEXT("HitEnemy"));
+				UE_LOG(LogTemp, Warning, TEXT("HitPlayer"));
 				//UGameplayStatics::ApplyDamage(BlockingActor, EnemyEquippedWeapon->GetWeaponDamage(), GetController(), this, UDamageType::StaticClass());
+			}
+
+			if (ADemoEnemy* HitEnemy = Cast<ADemoEnemy>(BlockingActor))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("HitEnemy"));
+				UGameplayStatics::ApplyDamage(BlockingActor, EnemyEquippedWeapon->GetWeaponDamage(), GetController(), this, UDamageType::StaticClass());
+			}
+		}
+	}
+	else
+	{
+		// Ballistic effects if not hit
+		if (EnemyEquippedWeapon->GetWeaponBeamParticles())
+		{
+			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
+				GetWorld(),
+				EnemyEquippedWeapon->GetWeaponBeamParticles(),
+				BarrelSocketTransform);
+
+			if (Beam)
+			{
+				Beam->SetVectorParameter(FName("Target"), EndIfNotHit);
 			}
 		}
 	}
 
-	// Ballistic effects if not hit
-	if (EnemyEquippedWeapon->GetWeaponBeamParticles())
-	{
-		UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
-			GetWorld(),
-			EnemyEquippedWeapon->GetWeaponBeamParticles(),
-			BarrelSocketTransform);
-
-		if (Beam)
-		{
-			Beam->SetVectorParameter(FName("Target"), EndIfNotHit);
-		}
-	}
 
 	// Gun shot sounds
 	if (EnemyEquippedWeapon->GetWeaponSounds())

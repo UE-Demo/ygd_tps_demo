@@ -32,7 +32,7 @@
 #include "DemoCharacter.generated.h"
 
 UCLASS()
-class YGD_TPS_DEMO_API ADemoCharacter : public ACharacter
+class YGD_TPS_DEMO_API ADemoCharacter : public ACharacter, public IDemoBulletHitInterface
 {
 	GENERATED_BODY()
 

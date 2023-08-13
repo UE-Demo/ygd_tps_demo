@@ -50,6 +50,8 @@ void ADemoCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+
 	CameraDefaultFOV = GetCharacterCamera()->FieldOfView;
 	CameraTempFOV = CameraDefaultFOV;
 
@@ -338,29 +340,29 @@ void ADemoCharacter::WeaponFire()
 				{
 					DrawDebugSphere(GetWorld(), BeamEndHitResult.Location, 10.f, 12, FColor::Blue, true);
 					// if hit result implement DemoBulletHitInterface
-					AActor* BeamHItActor= BeamEndHitResult.GetActor();
-					if (IDemoBulletHitInterface* BulletHitInterface = Cast<IDemoBulletHitInterface>(BeamHItActor))
-					{
-						BulletHitInterface->BulletHit_Implementation(BeamEndHitResult);
-					}
-					// if hit result do not implement DemoBulletHitInterface
-					else
-					{
-						if (EquippedWeapon->GetWeaponImpactParticles())
-						{
-							UGameplayStatics::SpawnEmitterAtLocation(
-								GetWorld(),
-								EquippedWeapon->GetWeaponImpactParticles(),
-								BeamEndHitResult.Location);
-						}
-						else { UE_LOG(LogTemp, Warning, TEXT("ImpactParticles Lost.")); }
-					}
+					//AActor* BeamHItActor= BeamEndHitResult.GetActor();
+					//if (IDemoBulletHitInterface* BulletHitInterface = Cast<IDemoBulletHitInterface>(BeamHItActor))
+					//{
+					//	BulletHitInterface->BulletHit_Implementation(BeamEndHitResult);
+					//}
+					//// if hit result do not implement DemoBulletHitInterface
+					//else
+					//{
+					//	if (EquippedWeapon->GetWeaponImpactParticles())
+					//	{
+					//		UGameplayStatics::SpawnEmitterAtLocation(
+					//			GetWorld(),
+					//			EquippedWeapon->GetWeaponImpactParticles(),
+					//			BeamEndHitResult.Location);
+					//	}
+					//	else { UE_LOG(LogTemp, Warning, TEXT("ImpactParticles Lost.")); }
+					//}
 					
 					// if hit enemy apply damage to enemy
-					if (ADemoEnemy* HitEnemy = Cast<ADemoEnemy>(BeamHItActor))
-					{
-						UGameplayStatics::ApplyDamage(BeamHItActor, EquippedWeapon->GetWeaponDamage(), GetController(), this, UDamageType::StaticClass());
-					}
+					//if (ADemoEnemy* HitEnemy = Cast<ADemoEnemy>(BeamHItActor))
+					//{
+					//	UGameplayStatics::ApplyDamage(BeamHItActor, EquippedWeapon->GetWeaponDamage(), GetController(), this, UDamageType::StaticClass());
+					//}
 				}
 			}
 
