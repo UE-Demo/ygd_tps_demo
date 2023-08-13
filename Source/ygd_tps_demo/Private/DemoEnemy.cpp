@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+  // Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "DemoEnemy.h"
@@ -149,18 +149,17 @@ void ADemoEnemy::EnemyWeaponFire()
 		if (BlockingActor)
 		{
 			DrawDebugSphere(GetWorld(), EnemyHitResult.Location, 10.f, 12, FColor::Blue, true);
-			UE_LOG(LogTemp, Warning, TEXT("BlockingActor : %s"), *BlockingActor->GetName());
-			UE_LOG(LogTemp, Warning, TEXT("BlockingActor Location : %s"), *BlockingActor->GetActorLocation().ToString());
+
+			// if hit enemy apply damage to enemy
 			if (ADemoCharacter* HitEnemy = Cast<ADemoCharacter>(BlockingActor))
 			{
-				UE_LOG(LogTemp, Warning, TEXT("HitPlayer"));
-				//UGameplayStatics::ApplyDamage(BlockingActor, EnemyEquippedWeapon->GetWeaponDamage(), GetController(), this, UDamageType::StaticClass());
+				UGameplayStatics::ApplyDamage(BlockingActor, EnemyEquippedWeapon->GetWeaponDamage(), GetController(), this, UDamageType::StaticClass());
 			}
 
-			if (ADemoEnemy* HitEnemy = Cast<ADemoEnemy>(BlockingActor))
+			if (IDemoBulletHitInterface* BulletHitInterface = Cast<IDemoBulletHitInterface>(BlockingActor))
 			{
-				UE_LOG(LogTemp, Warning, TEXT("HitEnemy"));
-				UGameplayStatics::ApplyDamage(BlockingActor, EnemyEquippedWeapon->GetWeaponDamage(), GetController(), this, UDamageType::StaticClass());
+				BulletHitInterface->BulletHit_Implementation(EnemyHitResult);
+
 			}
 		}
 	}
@@ -214,6 +213,7 @@ void ADemoEnemy::Tick(float DeltaTime)
 	{
 		EnemyWeaponFire();
 	}
+
 }
 
 void ADemoEnemy::ShowInfoWidget_Implementation()

@@ -102,8 +102,23 @@ public:
 	class UAnimInstance* AnimInstance;
 #pragma endregion
 
-#pragma region Combat
+#pragma region PlayerStatus
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+		float Health;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+		float MaxHealth;
+#pragma endregion
 
+#pragma region PlayerGetHit
+public:
+	virtual void BulletHit_Implementation(FHitResult HitResult) override;
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvenet, AController* EvenInstigator, AActor* DamageCauser) override;
+
+#pragma endregion
+
+
+#pragma region Combat
+protected:
 	bool CheckWeaponAmmoEmpty();
 	bool bShooting;
 

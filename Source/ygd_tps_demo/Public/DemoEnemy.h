@@ -127,7 +127,6 @@ protected:
 	void ResetStunned();
 
 public:
-
 	FORCEINLINE bool IsStunned() const { return bIsStunned; }
 	virtual void BulletHit_Implementation(FHitResult HitResult) override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvenet, AController* EvenInstigator, AActor* DamageCauser) override;

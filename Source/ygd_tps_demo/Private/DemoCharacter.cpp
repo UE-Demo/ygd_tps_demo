@@ -295,6 +295,26 @@ void ADemoCharacter::CharacterLook(const FInputActionValue& value)
 
 #pragma region WeaponShoot
 
+void ADemoCharacter::BulletHit_Implementation(FHitResult HitResult)
+{
+	
+}
+
+float ADemoCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvenet, AController* EvenInstigator, AActor* DamageCauser)
+{
+	if (Health - DamageAmount <= 0.f)
+	{
+		Health = 0.f;
+		// EnemyDie();
+	}
+	else
+	{
+		Health -= DamageAmount;
+	}
+
+	return DamageAmount;
+}
+
 bool ADemoCharacter::CheckWeaponAmmoEmpty()
 {
 	if (!EquippedWeapon) { return false; }
@@ -340,29 +360,32 @@ void ADemoCharacter::WeaponFire()
 				{
 					DrawDebugSphere(GetWorld(), BeamEndHitResult.Location, 10.f, 12, FColor::Blue, true);
 					// if hit result implement DemoBulletHitInterface
-					//AActor* BeamHItActor= BeamEndHitResult.GetActor();
-					//if (IDemoBulletHitInterface* BulletHitInterface = Cast<IDemoBulletHitInterface>(BeamHItActor))
-					//{
-					//	BulletHitInterface->BulletHit_Implementation(BeamEndHitResult);
-					//}
-					//// if hit result do not implement DemoBulletHitInterface
-					//else
-					//{
-					//	if (EquippedWeapon->GetWeaponImpactParticles())
-					//	{
-					//		UGameplayStatics::SpawnEmitterAtLocation(
-					//			GetWorld(),
-					//			EquippedWeapon->GetWeaponImpactParticles(),
-					//			BeamEndHitResult.Location);
-					//	}
-					//	else { UE_LOG(LogTemp, Warning, TEXT("ImpactParticles Lost.")); }
-					//}
-					
+					AActor* BeamHItActor= BeamEndHitResult.GetActor();
+
 					// if hit enemy apply damage to enemy
-					//if (ADemoEnemy* HitEnemy = Cast<ADemoEnemy>(BeamHItActor))
-					//{
-					//	UGameplayStatics::ApplyDamage(BeamHItActor, EquippedWeapon->GetWeaponDamage(), GetController(), this, UDamageType::StaticClass());
-					//}
+					if (ADemoEnemy* HitEnemy = Cast<ADemoEnemy>(BeamHItActor))
+					{
+						UGameplayStatics::ApplyDamage(BeamHItActor, EquippedWeapon->GetWeaponDamage(), GetController(), this, UDamageType::StaticClass());
+					}
+
+					if (IDemoBulletHitInterface* BulletHitInterface = Cast<IDemoBulletHitInterface>(BeamHItActor))
+					{
+						BulletHitInterface->BulletHit_Implementation(BeamEndHitResult);
+						
+					}
+					// if hit result do not implement DemoBulletHitInterface
+					else
+					{
+						if (EquippedWeapon->GetWeaponImpactParticles())
+						{
+							UGameplayStatics::SpawnEmitterAtLocation(
+								GetWorld(),
+								EquippedWeapon->GetWeaponImpactParticles(),
+								BeamEndHitResult.Location);
+						}
+						else { UE_LOG(LogTemp, Warning, TEXT("ImpactParticles Lost.")); }
+					}
+					
 				}
 			}
 
