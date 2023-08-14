@@ -117,6 +117,21 @@ void ADemoEnemy::EnemyEquipWeapon(ADemoWeapon* WeaponToEquip)
 	EnemyEquippedWeapon->SetItemState(EItemState::EItemState_Equipped);
 }
 
+void ADemoEnemy::EnemyDropWeapon()
+{
+	if (EnemyEquippedWeapon)
+	{
+		FDetachmentTransformRules DetachmentTransformRules(
+			EDetachmentRule::KeepWorld, true);
+		EnemyEquippedWeapon->GetItemMesh()->DetachFromComponent(DetachmentTransformRules);
+
+		// EquippedWeapon->SetItemState(EItemState::EItemState_Falling);
+		EnemyEquippedWeapon->ItemStartFalling();
+
+		EnemyEquippedWeapon = nullptr;
+	}
+}
+
 void ADemoEnemy::EnemyWeaponFire()
 {
 	if (TargetActor == nullptr) return;
@@ -213,7 +228,7 @@ void ADemoEnemy::Tick(float DeltaTime)
 		}
 	}
 
-	if (!bIsStunned && !EnemyEquippedWeapon->GetReloading() && EnemyEquippedWeapon->GetCanFire())
+	if (EnemyEquippedWeapon && !bIsStunned &&  !EnemyEquippedWeapon->GetReloading() && EnemyEquippedWeapon->GetCanFire())
 	{
 		EnemyWeaponFire();
 	}
@@ -333,6 +348,11 @@ void ADemoEnemy::EnemyDie()
 		UE_LOG(LogTemp, Log, TEXT("EnemyDie4"))
 		EnemyController->GetBlackboardComponent()->SetValueAsBool(FName("Dead"), true);
 		EnemyController->StopMovement();
+	}
+
+	if (EnemyEquippedWeapon)
+	{
+		EnemyDropWeapon();
 	}
 }
 

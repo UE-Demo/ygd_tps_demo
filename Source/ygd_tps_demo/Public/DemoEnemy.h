@@ -156,6 +156,7 @@ protected:
 	ADemoWeapon* SpawnEnemyDefaultWeapon();
 
 	void EnemyEquipWeapon(ADemoWeapon* WeaponToEquip);
+	void EnemyDropWeapon();
 
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = EnemyCombat, meta = (AllowPrivateAccess = "true"))
 	AActor* TargetActor;
