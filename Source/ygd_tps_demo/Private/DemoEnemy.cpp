@@ -13,6 +13,7 @@
 ADemoEnemy::ADemoEnemy():
 	EnemyHealth(100.f),
 	EnemyMaxHealth(100.f),
+	bIsDead(false),
 
 	InfoWidgetDisplayTime(4.f),
 
@@ -203,10 +204,13 @@ void ADemoEnemy::Tick(float DeltaTime)
 
 	// Face to TargetActor
 	if (TargetActor)
-	{
-		FVector TargetLocation = TargetActor->GetActorLocation();
-		FRotator NewRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TargetLocation);
-		SetActorRotation(NewRotation);
+	{	
+		if (!bIsStunned && !bIsDead)
+		{
+			FVector TargetLocation = TargetActor->GetActorLocation();
+			FRotator NewRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TargetLocation);
+			SetActorRotation(NewRotation);
+		}
 	}
 
 	if (!bIsStunned && !EnemyEquippedWeapon->GetReloading() && EnemyEquippedWeapon->GetCanFire())
@@ -285,7 +289,10 @@ void ADemoEnemy::BulletHit_Implementation(FHitResult HitResult)
 
 	ShowInfoWidget();
 
-	PlayEnemyHitMontage(FName("HitReact_1"));
+	if (!bIsDead)
+	{
+		PlayEnemyHitMontage(FName("HitReact_1"));
+	}
 
 	SetStunned();
 }
@@ -298,6 +305,7 @@ float ADemoEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvene
 	{
 		EnemyHealth = 0.f;
 		EnemyDie();
+		UE_LOG(LogTemp, Log, TEXT("EnemyDie"))
 	}
 	else
 	{
@@ -309,5 +317,26 @@ float ADemoEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvene
 
 void ADemoEnemy::EnemyDie()
 {
+	if (bIsDead) return;
+	UE_LOG(LogTemp, Log, TEXT("EnemyDie2"))
+	bIsDead = true;
 	HideInfoWidget();
+	
+	if (GetMesh()->GetAnimInstance())
+	{
+		UE_LOG(LogTemp, Log, TEXT("EnemyDie3"))
+		GetMesh()->GetAnimInstance()->Montage_Play(EnemyDeathMontage);
+		GetMesh()->GetAnimInstance()->Montage_JumpToSection(FName("Death_1"));
+	}
+	if (EnemyController)
+	{
+		UE_LOG(LogTemp, Log, TEXT("EnemyDie4"))
+		EnemyController->GetBlackboardComponent()->SetValueAsBool(FName("Dead"), true);
+		EnemyController->StopMovement();
+	}
+}
+
+void ADemoEnemy::EnemyEndDeath()
+{
+	Destroy();
 }

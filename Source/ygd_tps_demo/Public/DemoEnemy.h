@@ -37,6 +37,14 @@ public:
 
 	void EnemyDie();
 
+	UFUNCTION(BlueprintCallable)
+	void EnemyEndDeath();
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = EnemyStatus, meta = (AllowPrivateAccess = "true"))
+	bool bIsDead;
+
+	UFUNCTION()
+	FORCEINLINE bool GetIsDead() const { return bIsDead; }
+
 #pragma endregion
 
 protected:
@@ -73,6 +81,8 @@ protected:
 #pragma region Anim
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = HitReact, meta = (AllowPrivateAccess = "true"))
 		UAnimMontage* EnemyHitMontage;
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = HitReact, meta = (AllowPrivateAccess = "true"))
+		UAnimMontage* EnemyDeathMontage;
 
 	void PlayEnemyHitMontage(FName MontageSection, float PlayRate = 1.f);
 
@@ -127,7 +137,7 @@ protected:
 	void ResetStunned();
 
 public:
-	FORCEINLINE bool IsStunned() const { return bIsStunned; }
+	FORCEINLINE bool GetIsStunned() const { return bIsStunned; }
 	virtual void BulletHit_Implementation(FHitResult HitResult) override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvenet, AController* EvenInstigator, AActor* DamageCauser) override;
 

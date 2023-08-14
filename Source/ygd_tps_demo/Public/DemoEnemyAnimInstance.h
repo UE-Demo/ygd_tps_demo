@@ -19,10 +19,13 @@ class YGD_TPS_DEMO_API UDemoEnemyAnimInstance : public UAnimInstance
 
 protected:
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	ADemoEnemy* Enemy;
+	class ADemoEnemy* Enemy;
 
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	float EnemySpeed;
+
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+		bool EnemyIsDead;
 
 public:
 	UFUNCTION(BlueprintCallable)

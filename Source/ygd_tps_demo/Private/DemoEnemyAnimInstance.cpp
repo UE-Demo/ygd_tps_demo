@@ -15,6 +15,8 @@ void UDemoEnemyAnimInstance::UpdateAnimationProperties(float DeltaTime)
 		FVector EnemyVelocity{ Enemy->GetVelocity() };
 		EnemyVelocity.Z = 0.f;
 		EnemySpeed = EnemyVelocity.Size();
+
+		EnemyIsDead = Enemy->GetIsDead();
 	}
 	else { UE_LOG(LogTemp, Warning, TEXT("No EnemyBP binding to EnemyAnimInstance")); }
 }
